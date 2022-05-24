@@ -1,3 +1,4 @@
+requires aiml:
 to run: open core and run encrypt on your password. then open util.txt and put the key in the <k> and the encrypted password in <p>
 example:
 encrypt('vobert')
