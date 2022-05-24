@@ -9,11 +9,21 @@ import os
 import random
 import html
 import threading
+import aiml
+from os import listdir
 from text import notify, rmind, room_list, jsonrooms, _mods, _board, lockrooms
 
 weighted_choice = lambda s : random.choice(sum(([v]*wt for v,wt in s),[]))
 opener = urllib.request.build_opener()
-opener.addheaders=[('User-agent', 'Mozilla/5.0')]
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+
+kernel = aiml.Kernel()
+session_dict = dict()
+if os.path.isfile("bot_brain.brn"):
+    kernel.bootstrap(brainFile = "bot_brain.brn")
+else:
+    kernel.bootstrap(learnFiles = "std-startup.xml", commands = "load aiml b")
+    kernel.saveBrain("bot_brain.brn")
 
 def unescape(text): return html.unescape(text)
 def escape(text): return ''.join(['&#%s;' % ord(x) for x in text])
@@ -55,28 +65,31 @@ def decrypt(key, x):
         l.append(match.replace(match, z[match]))
     return ''.join(l) 
 
-def task_create(name, timeout, function, *args):
+def task_create(name, function, *args):
     task = newObject(**{
-        'timeout': int(timeout),
         'function': function,
-        'start': time.time(),
-        'var': 1
+        'var': True
         })
     objects[name] = task
     def set_timeout(name, *args):
         v = objects[name]
-        while v.var == 1:
-            time.sleep(1)
-            if (time.time() - v.start) > v.timeout:
-                v.function(*args)
-                v.start = time.time()
+        while v.var == True:
+            v.function(*args)
     threading.Thread(target=set_timeout, args=(name, args), daemon = True).start()
 
 def stop_task(name):
     v = objects[name]
     v.var = 0
     del objects[name]
-
+        
+def aichat(x, user, uid, roomname, othervars):
+    try: session_id = session_dict[user]
+    except:
+        session_id = random.randrange(1000000, 9999999)
+        session_dict[user] = session_id        
+    x = kernel.respond(x, session_id)
+    return x
+        
 def nom(x, user, uid, roomname, othervars):
     person, message = x.split(' ',1)
     othervars[1].say(person, message)
