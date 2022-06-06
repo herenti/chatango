@@ -94,7 +94,7 @@ def load_utill():
     data = f.read()
     p = re.compile(r"<p>(.*?)</p>").search(data).group(1)
     k = re.compile(r"<k>(.*?)</k>").search(data).group(1)
-    u = re.compile(r"<k>(.*?)</k>").search(data).group(1)
+    u = re.compile(r"<u>(.*?)</u>").search(data).group(1)
     f.close()
     return (p, k, u)
     
