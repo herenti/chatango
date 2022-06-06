@@ -9,21 +9,14 @@ import os
 import random
 import html
 import threading
-import aiml
 from os import listdir
 from text import notify, rmind, room_list, jsonrooms, _mods, _board, lockrooms
 
 weighted_choice = lambda s : random.choice(sum(([v]*wt for v,wt in s),[]))
 opener = urllib.request.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-
-kernel = aiml.Kernel()
-session_dict = dict()
-if os.path.isfile("bot_brain.brn"):
-    kernel.bootstrap(brainFile = "bot_brain.brn")
-else:
-    kernel.bootstrap(learnFiles = "std-startup.xml", commands = "load aiml b")
-    kernel.saveBrain("bot_brain.brn")
+banned_terms = ['bannedtermshere']
+lang = {'afrikaans': 'af', 'albanian': 'sq', 'amharic': 'am', 'arabic': 'ar', 'armenian': 'hy', 'azerbaijani': 'az', 'basque': 'eu', 'belarusian': 'be', 'bengali': 'bn', 'bosnian': 'bs', 'bulgarian': 'bg', 'catalan': 'ca', 'cebuano': 'ceb', 'chichewa': 'ny', 'chinese (simplified)': 'zh-cn', 'chinese (traditional)': 'zh-tw', 'corsican': 'co', 'croatian': 'hr', 'czech': 'cs', 'danish': 'da', 'dutch': 'nl', 'english': 'en', 'esperanto': 'eo', 'estonian': 'et', 'filipino': 'tl', 'finnish': 'fi', 'french': 'fr', 'frisian': 'fy', 'galician': 'gl', 'georgian': 'ka', 'german': 'de', 'greek': 'el', 'gujarati': 'gu', 'haitian creole': 'ht', 'hausa': 'ha', 'hawaiian': 'haw', 'hebrew': 'he', 'hindi': 'hi', 'hmong': 'hmn', 'hungarian': 'hu', 'icelandic': 'is', 'igbo': 'ig', 'indonesian': 'id', 'irish': 'ga', 'italian': 'it', 'japanese': 'ja', 'javanese': 'jw', 'kannada': 'kn', 'kazakh': 'kk', 'khmer': 'km', 'korean': 'ko', 'kurdish (kurmanji)': 'ku', 'kyrgyz': 'ky', 'lao': 'lo', 'latin': 'la', 'latvian': 'lv', 'lithuanian': 'lt', 'luxembourgish': 'lb', 'macedonian': 'mk', 'malagasy': 'mg', 'malay': 'ms', 'malayalam': 'ml', 'maltese': 'mt', 'maori': 'mi', 'marathi': 'mr', 'mongolian': 'mn', 'myanmar (burmese)': 'my', 'nepali': 'ne', 'norwegian': 'no', 'odia': 'or', 'pashto': 'ps', 'persian': 'fa', 'polish': 'pl', 'portuguese': 'pt', 'punjabi': 'pa', 'romanian': 'ro', 'russian': 'ru', 'samoan': 'sm', 'scots gaelic': 'gd', 'serbian': 'sr', 'sesotho': 'st', 'shona': 'sn', 'sindhi': 'sd', 'sinhala': 'si', 'slovak': 'sk', 'slovenian': 'sl', 'somali': 'so', 'spanish': 'es', 'sundanese': 'su', 'swahili': 'sw', 'swedish': 'sv', 'tajik': 'tg', 'tamil': 'ta', 'telugu': 'te', 'thai': 'th', 'turkish': 'tr', 'ukrainian': 'uk', 'urdu': 'ur', 'uyghur': 'ug', 'uzbek': 'uz', 'vietnamese': 'vi', 'welsh': 'cy', 'xhosa': 'xh', 'yiddish': 'yi', 'yoruba': 'yo', 'zulu': 'zu'}
 
 def unescape(text): return html.unescape(text)
 def escape(text): return ''.join(['&#%s;' % ord(x) for x in text])
@@ -96,7 +89,7 @@ def nom(x, user, uid, roomname, othervars):
     return 'PM sent.'
 
 def _notify(x):
-    notify[x] = json.dumps(x+' new messages are available. If you do not know how to read messages ask myth')
+    notify[x] = json.dumps(x+' new mail is available. do inbox show then inbox check numberhere')
     f = open('notify.txt', 'w')
     for i in notify:
             message = json.loads(notify[i])
@@ -125,7 +118,7 @@ def seen(x, user, uid, roomname, othervars):
     except KeyError: ret = 'I have not recorded any messages from that account.'
     return ret
 
-def remind(x, user, uid, roomname, othervars):
+def mail(x, user, uid, roomname, othervars):
     try:
             mid = str(random.randrange(1000, 9999))
             name, message = x.split(' ',1)
@@ -138,42 +131,116 @@ def remind(x, user, uid, roomname, othervars):
                 name, msg, _user, stime = json.loads(rmind[i])                                        
                 f.write(json.dumps([i, name, msg, _user, stime])+"\n")
             f.close()
-            return "I will remind %s that." % gender(name)
+            return "I will mail %s that." % gender(name)
     except Exception as e:
             return '%s' % e
 
 def inbox(x, user, uid, roomname, othervars):
-    x = x.lower().split(' ')
-    y = []
-    if len(x) < 1: return 'Incorrect command usage.'
-    if x[0] == 'show':
+    try:
+        x = x.lower().split(' ')
+        y = []
+        if len(x) < 1: return 'Incorrect command usage.'
+        if x[0] == 'show':
             for i in rmind:
                   name, msg, _user, stime = json.loads(rmind[i])
                   if name == user: y.append('#<font color="#00ffff"><b>[</b></font>'+i+'<font color="#00ffff"><b>]</b></font>' + ': from - '+_user)
             ret = '<br /><br />'+'<br />'.join(y) if len(y) > 0 else 'no messages found'
             return ret
-    elif x[0] == 'check':
-            try:
-                    name, msg, _user, stime = json.loads(rmind[x[1]])
-                    del rmind[x[1]]
-                    f = open("rmind.txt", "w")
-                    for i in rmind:
-                            _name, _msg, __user, _stime = json.loads(rmind[i])                                        
-                            f.write(json.dumps([i, _name, _msg, __user, _stime])+"\n")
-                    f.close()
-                    return 'Message from %s to %s: %s - sent %s ago.' % (_user, name, msg, getSTime(float(stime)))
-            except KeyError: return 'Fail'
+        elif x[0] == 'check':
+            name, msg, _user, stime = json.loads(rmind[x[1]])
+            del rmind[x[1]]
+            f = open("rmind.txt", "w")
+            for i in rmind:
+                    _name, _msg, __user, _stime = json.loads(rmind[i])                                        
+                    f.write(json.dumps([i, _name, _msg, __user, _stime])+"\n")
+            f.close()
+            return 'Message from %s to %s: %s - sent %s ago.' % (_user, name, msg, getSTime(float(stime)))
+    except: return 'fail'
+
+def yt(vid, user, uid, roomname, othervars):
+    for i in vid.split():
+        if i in banned_terms:
+            return 'no u'
+    vid = urllib.parse.quote(vid.replace(" ", "+"))
+    _url = ("https://www.googleapis.com/youtube/v3/search?q=/%s&part=snippet&key=%s") % (vid, 'AIzaSyB8ENXAItE6S7GLBocixQJMUAVHMOepwuk')
+    _data = urllib.request.urlopen(_url)
+    data = _data.read().decode("utf-8")
+    _data.close()
+    data = json.loads(data)
+    _i = []
+    if data["pageInfo"]["totalResults"] != 0:
+        for x in data["items"]:
+            if "videoId" in x["id"]:
+                _i.append(x)
+        video = _i[0]
+        video_info = video["snippet"]
+        link = "http://www.youtube.com/watch?v=%s" % (video["id"]["videoId"])
+        title = video_info["title"]
+        return '[%s]<br/><br/>%s' % (title, link)
+    else:
+        return 'no results'
 
 def gws(x, user, uid, roomname, othervars):
-    search = x.split()
-    search = '%20'.join(map(str, search))
-    url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s&safe=off' % search
-    search_results = urlreq.urlopen(url)
-    js = json.loads(search_results.read().decode())
-    rest = list(map(lambda x: x['unescapedUrl'], js['responseData']['results']))
-    rest = '<br /><br />' + '<br />'.join(rest)
-    return rest
+    try:
+        for i in x.split():
+            if i in banned_terms:
+                return 'no u'
+        x = urllib.parse.quote(x.replace(" ", "+"))
+        _url = ('https://www.googleapis.com/customsearch/v1?key=%s&cx=fbd2fe34e5392ec2a&safe=off&q=%s' % ('AIzaSyB8ENXAItE6S7GLBocixQJMUAVHMOepwuk', x))
+        _data = urllib.request.urlopen(_url)
+        data = _data.read().decode("utf-8")
+        _data.close()
+        data = json.loads(data)
+        results = []
+        for i in data['items']:
+            link = i['link']
+            results.append(link)
+        results = results[:4]
+        return '<br/><br/>' + '<br/>'.join(results)
+    except:
+        return 'fail'
 
+def gis(x, user, uid, roomname, othervars):
+    for i in x.split():
+        if i in banned_terms:
+            return 'no u'
+    x = urllib.parse.quote(x.replace(" ", "+"))
+    _url = ('https://www.googleapis.com/customsearch/v1?key=%s&cx=e4944556d694be885&safe=off&num=10&searchType=image&q=%s' % ('AIzaSyB8ENXAItE6S7GLBocixQJMUAVHMOepwuk', x))
+    _data = urllib.request.urlopen(_url)
+    data = _data.read().decode("utf-8")
+    _data.close()
+    data = json.loads(data)
+    results = []
+    if int(data["queries"]["request"][0]["totalResults"]) != 0:
+        for i in data['items']:
+            link = i['link']
+            results.append(link)
+        return random.choice(results)
+    else:
+        return 'no images found'            
+
+def tran(x, user, uid, roomname, othervars):
+    try:
+        for i in x.split():
+            if i in banned_terms:
+                return 'no u'
+        dest, _text = x.split(' ',1)
+        if dest in lang.keys():
+            dest = lang[dest]
+        if dest not in lang.values():
+            return 'Invalid language'
+        try:
+            qs = urllib.parse.quote(_text)
+        except:
+            qs = urllib.parse.quote(_text.encode('utf8'))
+        url = 'https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=auto&tl=%s&q=%s' % (dest, qs)
+        data = opener.open(url)
+        _data = json.loads(data.read().decode())
+        data.close()
+        return _data[0][0][0]
+    except:
+        return 'translation fail'
+    
 def getBGTime(x):
     total_seconds = float(x - time.time())
     MIN     = 60
@@ -215,7 +282,11 @@ def name_color_gen():
     return ''.join(color)
 
 def whois(x, user, uid, roomname, othervars):
-    return roomname.whois(x.lower())
+    ret = roomname.whois(x.lower())
+    if len(ret) > 0:
+        return ', '.join(ret)
+    else:
+        return 'no accounts for that user yet'
 
 def dumpwhois(x):
     f = open("whois.txt", "w")
@@ -223,23 +294,23 @@ def dumpwhois(x):
            _uid = json.loads(cakelib2.uids[i])
            f.write(json.dumps([i, _uid])+"\n")                                        
     f.close()
-    print('dumped whois info')
 
 def post(x, user, uid, roomname, othervars):
     try:
             keylist = list('12345678910@$&*^#!abcdefghijklmnopqrstuvwxyz')
             key = ''.join([random.choice(keylist) for x in range(6)])
     except Exception as e: print(e)
-    if len(_board.keys()) < 11:
-            x = '%s - <font color="#00ffff"><b>%s</b></font>: %s' % (time.strftime('%c'), user, x)
-            _board[key] = json.dumps(x)
-            f = open("board.txt", "w")
-            for i in _board:
-                   _post = json.loads(_board[i])
-                   f.write(json.dumps([i, _post])+"\n")                                        
-            f.close()
-            return 'Posted to the board.'
-    else: return 'The board is too large, so please delete some posts.'
+    if len(_board.keys()) > 11:
+        for i in _board:
+            del _board[i]
+    x = '%s - <font color="#00ffff"><b>%s</b></font>: %s' % (time.strftime('%c'), user, x)
+    _board[key] = json.dumps(x)
+    f = open("board.txt", "w")
+    for i in _board:
+           _post = json.loads(_board[i])
+           f.write(json.dumps([i, _post])+"\n")                                        
+    f.close()
+    return 'Posted to the board.'
 
 def board(x, user, uid, roomname, othervars):
     y = [json.loads(_board[x]) for x in _board]
@@ -257,9 +328,42 @@ def gender(x):
     elif ret == "?": r = "them"        
     return r
 
+def bgtime(x, user, uid, chat, cake):
+    resp = urllib.request.urlopen("http://st.chatango.com/profileimg/%s/%s/%s/mod1.xml" % (x.lower()[0], x.lower()[1], x.lower()))
+    try: data = resp.read().decode()
+    except: data = resp.read().decode('latin-1')
+    resp.close()
+    try: data = re.compile(r'<d>(.*?)</d>', re.IGNORECASE).search(data).group(1)
+    except: return 'they have never had a background, or that is not a real user'
+    data = int(data)
+    if data < time.time(): return 'that users background expired: ' + getSTime(data) + ' ago'
+    else:
+        return 'that user has: ' + getBGTime(int(data)) + ' left'
+
 def is_online(user):
     resp = urllib.request.urlopen("http://"+user+".chatango.com").read().decode()
     return str(bool('chat with' in resp.lower()))+ ' '+user
+
+def cmds(x, user, uid, chat, cake):
+    return 'in progress: for now: [whois, seen, bgtime, yt, gis, gws, tran, mail, inbox show/check, owner, post, board]' 
+
+chatderp = []
+chatobj = []
+
+def owner(x, user, uid, chat, cake):
+    x = x.lower()
+    if cakelib2.checkG(x) == True:
+        cake[2].joinChat(x)
+        chatderp.append('i')
+        def _owner(b):
+            time.sleep(2)
+            owner = cake[2].gChat(x).chatInfo.owner
+            chatobj.append(cake[2].gChat(x))
+            chatderp.remove('i')
+            chat.post('the owner is: ' + owner)
+        _task(_owner, x)
+        return 'working on it'
+    else: return 'that is not a real chat name'
     
 def rmanage(x, user, uid, chat, cake):
     x = x.lower()
@@ -372,4 +476,9 @@ def _timer(seconds, function, *var):
     def decorator(*var):
         while not event.wait(seconds): function(*var)
     threading.Thread(target = decorator, args = (var), daemon = True).start()
-    return 
+    return
+
+def _task(function, *var):
+    event = threading.Event()
+    threading.Thread(target = function, args = (var), daemon = True).start() 
+

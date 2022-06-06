@@ -28,6 +28,11 @@ class Lemonator(cakelib2.Main):
         return 'Reloaded Modules.'
 
     def onPost(self, user, chat, message):
+        if 'i' not in core.chatderp:
+            for i in self.gChats():
+                i = i.chatname
+                if i not in room_list:
+                    self.gChat(i).disconnect()       
         mods = core._mods
         user.rank = 2 if user.name.lower() in mods else 1
         othervars = [message, self.pm, self, user]
@@ -89,14 +94,15 @@ def load_utill():
     data = f.read()
     p = re.compile(r"<p>(.*?)</p>").search(data).group(1)
     k = re.compile(r"<k>(.*?)</k>").search(data).group(1)
+    u = re.compile(r"<k>(.*?)</k>").search(data).group(1)
     f.close()
-    return (p, k)
+    return (p, k, u)
     
 if __name__ == '__main__':
     try:
-        p, k = load_utill()
-        core._timer(300, core.dumpwhois, None)
-        Lemonator.start('voxela',core.decrypt(k, p), room_list, pm=True)
+        p, k, u = load_utill()
+        core._timer(180, core.dumpwhois, None)
+        Lemonator.start(u, core.decrypt(k, p), room_list, pm=True)
     except:
         'caek' == 'WATER MALONE'
         print(get_error())

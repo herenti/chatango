@@ -111,35 +111,27 @@ class Chat:
             return True
         else: return False
 
-    def getUid(self, args, line):
-        x = []
-        uid, names = line
-        for name in names.split():
-           if name == args:
-               x.append(uid)
-        return x
+    def _whois(self, string):
+        a = []
+        for i in uids:
+            i = json.loads(uids[i])
+            i = i.split()
+            if string in i:
+                a += i
+        return list(set(a))
 
     def whois(self, string):
-        '''Find who someone is based off their Unique Identification number'''
-        x = []
-        y = []
-        for key, value in uids.items():
-            uid = key
-            names = json.loads(value)
-            line = [key, names]
-            for xuids in self.getUid(string, line):
-                if xuids == uid:
-                    x.append(names)            
-        for i in list(set(' '.join(x).split())):
-            for o in uids:
-                for m in json.loads(uids[o]).split():
-                    if m == i:
-                        y.append(i)
-                        y.append(json.loads(uids[o]))
-        n = ', '.join(set(' '.join(y).split()))
-        return n
-                            
-            
+        a = []
+        a.append(string)
+        a = list(set(a))
+        while True:
+            l = len(a)
+            for n in a:
+                a += self._whois(n)
+                a = list(set(a))
+            if l == len(a):
+                break
+        return a                 
 
     def unmod(self, user):
         if self.isMod(self.main.user):
@@ -430,6 +422,8 @@ class Interpret:
 # main class
 ####
 
+_user_ = []
+
 class Main:
 
     def __init__(self):
@@ -488,6 +482,7 @@ class Main:
         if type(chats) == str: chats = chats.split()
         self.user = user
         self.password = password
+        _user_.append(self.user)
         [self.joinChat(x) for x in chats]
         if pm == True:
           self.pm = Pm(**{
@@ -534,9 +529,9 @@ class Main:
 uids = dict()
 lastmsg = dict()
 
-gnameColor = '000000'
+gnameColor = 'ffffff'
 gfontSise = '11'
-gfontColor = '000000'
+gfontColor = 'ffffff'
 
 _lastmsg = False
 _fullhistory = False
@@ -563,9 +558,10 @@ def server(group):
             s_number += int(x[0])
     return "s{}.chatango.com".format(s_number)
 
-def Auth(user, password): 
+def Auth(user, password):
     data = urllib.parse.urlencode({"user_id": user, "password": password, "storecookie": "on", "checkerrors": "yes"}).encode()
-    return regex('auth.chatango.com=(.*?);', urllib.request.urlopen("http://chatango.com/login", data).getheader('Set-Cookie'), None)
+    derp = regex('auth.chatango.com=(.*?);', urllib.request.urlopen("http://chatango.com/login", data).getheader('Set-Cookie'), None)
+    return derp
 
 def anon_id(_id, uid):
     return ''.join([str((
@@ -580,7 +576,9 @@ def gUser(user, alias, uid, _id):
             user = '#anon'+anon_id(_id, uid)        
         else: user = '$'+alias
     user = user.lower()
-    rUids(uid, user)
+    if not user.startswith('#' or '$'):
+        if user not in _user_:
+            rUids(uid, user)
     return User(**{'name': user.lower(), 'uid': uid})
 
 def rUids(k, v):
