@@ -162,7 +162,7 @@ def yt(vid, user, uid, roomname, othervars):
         if i in banned_terms:
             return 'no u'
     vid = urllib.parse.quote(vid.replace(" ", "+"))
-    _url = ("https://www.googleapis.com/youtube/v3/search?q=/%s&part=snippet&key=%s") % (vid, 'AIzaSyB8ENXAItE6S7GLBocixQJMUAVHMOepwuk')
+    _url = ("https://www.googleapis.com/youtube/v3/search?q=/%s&part=snippet&key=%s") % (vid, '')
     _data = urllib.request.urlopen(_url)
     data = _data.read().decode("utf-8")
     _data.close()
@@ -186,7 +186,7 @@ def gws(x, user, uid, roomname, othervars):
             if i in banned_terms:
                 return 'no u'
         x = urllib.parse.quote(x.replace(" ", "+"))
-        _url = ('https://www.googleapis.com/customsearch/v1?key=%s&cx=fbd2fe34e5392ec2a&safe=off&q=%s' % ('AIzaSyB8ENXAItE6S7GLBocixQJMUAVHMOepwuk', x))
+        _url = ('https://www.googleapis.com/customsearch/v1?key=%s&cx=fbd2fe34e5392ec2a&safe=off&q=%s' % ('', x))
         _data = urllib.request.urlopen(_url)
         data = _data.read().decode("utf-8")
         _data.close()
@@ -205,7 +205,7 @@ def gis(x, user, uid, roomname, othervars):
         if i in banned_terms:
             return 'no u'
     x = urllib.parse.quote(x.replace(" ", "+"))
-    _url = ('https://www.googleapis.com/customsearch/v1?key=%s&cx=e4944556d694be885&safe=off&num=10&searchType=image&q=%s' % ('AIzaSyB8ENXAItE6S7GLBocixQJMUAVHMOepwuk', x))
+    _url = ('https://www.googleapis.com/customsearch/v1?key=%s&cx=e4944556d694be885&safe=off&num=10&searchType=image&q=%s' % ('', x))
     _data = urllib.request.urlopen(_url)
     data = _data.read().decode("utf-8")
     _data.close()
