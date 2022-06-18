@@ -15,7 +15,7 @@ from text import notify, rmind, rpg_players, room_list, jsonrooms, _mods, _board
 weighted_choice = lambda s : random.choice(sum(([v]*wt for v,wt in s),[]))
 opener = urllib.request.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-banned_terms = ['bannedtermshere']
+banned_terms = ['banned']
 lang = {'afrikaans': 'af', 'albanian': 'sq', 'amharic': 'am', 'arabic': 'ar', 'armenian': 'hy', 'azerbaijani': 'az', 'basque': 'eu', 'belarusian': 'be', 'bengali': 'bn', 'bosnian': 'bs', 'bulgarian': 'bg', 'catalan': 'ca', 'cebuano': 'ceb', 'chichewa': 'ny', 'chinese (simplified)': 'zh-cn', 'chinese (traditional)': 'zh-tw', 'corsican': 'co', 'croatian': 'hr', 'czech': 'cs', 'danish': 'da', 'dutch': 'nl', 'english': 'en', 'esperanto': 'eo', 'estonian': 'et', 'filipino': 'tl', 'finnish': 'fi', 'french': 'fr', 'frisian': 'fy', 'galician': 'gl', 'georgian': 'ka', 'german': 'de', 'greek': 'el', 'gujarati': 'gu', 'haitian creole': 'ht', 'hausa': 'ha', 'hawaiian': 'haw', 'hebrew': 'he', 'hindi': 'hi', 'hmong': 'hmn', 'hungarian': 'hu', 'icelandic': 'is', 'igbo': 'ig', 'indonesian': 'id', 'irish': 'ga', 'italian': 'it', 'japanese': 'ja', 'javanese': 'jw', 'kannada': 'kn', 'kazakh': 'kk', 'khmer': 'km', 'korean': 'ko', 'kurdish (kurmanji)': 'ku', 'kyrgyz': 'ky', 'lao': 'lo', 'latin': 'la', 'latvian': 'lv', 'lithuanian': 'lt', 'luxembourgish': 'lb', 'macedonian': 'mk', 'malagasy': 'mg', 'malay': 'ms', 'malayalam': 'ml', 'maltese': 'mt', 'maori': 'mi', 'marathi': 'mr', 'mongolian': 'mn', 'myanmar (burmese)': 'my', 'nepali': 'ne', 'norwegian': 'no', 'odia': 'or', 'pashto': 'ps', 'persian': 'fa', 'polish': 'pl', 'portuguese': 'pt', 'punjabi': 'pa', 'romanian': 'ro', 'russian': 'ru', 'samoan': 'sm', 'scots gaelic': 'gd', 'serbian': 'sr', 'sesotho': 'st', 'shona': 'sn', 'sindhi': 'sd', 'sinhala': 'si', 'slovak': 'sk', 'slovenian': 'sl', 'somali': 'so', 'spanish': 'es', 'sundanese': 'su', 'swahili': 'sw', 'swedish': 'sv', 'tajik': 'tg', 'tamil': 'ta', 'telugu': 'te', 'thai': 'th', 'turkish': 'tr', 'ukrainian': 'uk', 'urdu': 'ur', 'uyghur': 'ug', 'uzbek': 'uz', 'vietnamese': 'vi', 'welsh': 'cy', 'xhosa': 'xh', 'yiddish': 'yi', 'yoruba': 'yo', 'zulu': 'zu'}
 command_list = ['yt','say','seen','mail','e','inbox','gws','gis','tran','whois','post','board','bgtime','rmange','owner','cmds','mod','reindex','nom']
 api_key = ''
@@ -641,7 +641,6 @@ def _inbox(x, user, uid, roomname, othervars):
             f.close()
             return 'Message from %s to %s: %s - sent %s ago.' % (_user, name, msg, getSTime(float(stime)))
     except: return 'fail'
-    
 
 def _yt(vid, user, uid, roomname, othervars):
     banned = vid.split()
@@ -782,15 +781,21 @@ def expired_time(x):
 
 def _expires(x, user, uid, chat, othervars):
     x = x.lower()
-    othervars[1].friend_add(x)
+    try:
+        othervars[1].ustatus[b][0]
+    except:
+        othervars[1].friend_add(x)
     def expires(b):
         time.sleep(2)
-        _time = othervars[1].ustatus[b][0]
-        _time = expired_time(float(_time))
-        chat.post(_time)
-        othervars[1].unfriend(b)
+        try:
+            _time = othervars[1].ustatus[b][0]
+            _time = expired_time(float(_time))
+            chat.post(b+': '+_time)
+            othervars[1].unfriend(b)
+        except:
+            chat.post('invalid, try again and check spelling')
     _task(expires, x)
-    return 'working on it'
+    return 'working on it. give the bot 4 seconds to respond before trying again'
 
 def name_color_gen():
     clist, i, color = ['1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'], 0, []
@@ -873,7 +878,10 @@ chatobj = []
 def _owner(x, user, uid, chat, cake):
     x = x.lower()
     if cakelib2.checkG(x) == True:
-        cake[2].joinChat(x)
+        try:
+            owner = cake[2].gChat(x).chatInfo.owner
+        except:
+            cake[2].joinChat(x)
         chatderp.append('i')
         def _owner(b):
             time.sleep(2)
@@ -882,7 +890,7 @@ def _owner(x, user, uid, chat, cake):
             chatderp.remove('i')
             chat.post('the owner is: ' + owner)
         _task(_owner, x)
-        return 'working on it'
+        return 'working on it. give the bot 4 seconds to respond before trying again'
     else: return 'that is not a real chat name'
     
 def _rmanage(x, user, uid, chat, cake):
