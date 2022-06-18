@@ -303,8 +303,9 @@ class Interpret:
     def _wladd(self, data, net):
         try:
             user, ison, laston = data
-            net.ustatus[user] = [laston, ison, '0']
-            net.friends.add(user)
+            if ison != 'invalid':
+                net.ustatus[user] = [laston, ison, '0']
+                net.friends.add(user)
         except: pass
         
     def _denied(self, data, net):
