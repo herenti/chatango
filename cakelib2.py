@@ -26,7 +26,7 @@ specials = {'mitvcanal': 56, 'magicc666': 22, 'livenfree': 18, 'eplsiite': 56, '
 ####
 
 '''
-(C) Copyright 2014 herenti:
+(C) Copyright 2022 herenti:
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
