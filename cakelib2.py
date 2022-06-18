@@ -223,6 +223,7 @@ class Pm:
     def __init__(self, **kw):
         [setattr(self, x, kw[x]) for x in kw]
         self.connect()
+        
 
     def connect(self):
         self.cumsock = socket.socket()
@@ -241,6 +242,15 @@ class Pm:
 
     def say(self, user, x):
         self.send('msg', user, x.replace('<', '[').replace('>',']'))
+
+    def friend_add(self, user):
+        if user not in self.friends:
+            self.send("wladd", user)
+
+    def unfriend(self, user):
+        if user in self.friends:
+            self.send("wldelete", user)
+            self.friends.remove(user)
 
     @property
     def disconnect(self):
@@ -273,8 +283,28 @@ class Interpret:
             'banlist': list(),
             'unbanlist': list()
           })
+
+    def _OK(self, data, net):
+        net.send('wl')
+        net.send('getblock')
         
 
+    def _wl(self, data, net):
+        try:
+            derp = 0
+            for i in range(len(data)):
+                if derp < len(data):
+                    user, laston, ison, idle = data[derp:derp+4]
+                    derp += 4
+                    net.ustatus[user] = [laston, ison, idle]
+                    net.friends.add(user)
+        except: pass
+
+    def _wladd(self, data, net):
+        user, ison, laston = data
+        net.ustatus[user] = [laston, ison, '0']
+        net.friends.add(user)
+        
     def _denied(self, data, net):
         net.disconnect()
 
@@ -492,7 +522,9 @@ class Main:
             'auth': Auth(self.user, self.password),
             'wbyte': b'',
             'ready': True,
-            'server': 'c1.chatango.com'
+            'server': 'c1.chatango.com',
+            'ustatus': dict(),
+            'friends': set()
             })
           self.connections['_pm'] = self.pm
         self.matrix()
@@ -509,6 +541,7 @@ class Main:
                 net = [x for x in connections if x.cumsock == i][0]
                 while not read_byte.endswith(b'\x00'):
                     read_byte += i.recv(8192)
+                    #print(read_byte)
                 self.interpret.lemonize(read_byte, net)
                 read_byte = b''
             for i in write_sock:
