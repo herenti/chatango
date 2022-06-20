@@ -15,13 +15,10 @@ from text import notify, rmind, rpg_players, room_list, jsonrooms, _mods, _board
 weighted_choice = lambda s : random.choice(sum(([v]*wt for v,wt in s),[]))
 opener = urllib.request.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-banned_terms = ['banned']
-lang = {'afrikaans': 'af', 'albanian': 'sq', 'amharic': 'am', 'arabic': 'ar', 'armenian': 'hy', 'azerbaijani': 'az', 'basque': 'eu', 'belarusian': 'be', 'bengali': 'bn', 'bosnian': 'bs', 'bulgarian': 'bg', 'catalan': 'ca', 'cebuano': 'ceb', 'chichewa': 'ny', 'chinese (simplified)': 'zh-cn', 'chinese (traditional)': 'zh-tw', 'corsican': 'co', 'croatian': 'hr', 'czech': 'cs', 'danish': 'da', 'dutch': 'nl', 'english': 'en', 'esperanto': 'eo', 'estonian': 'et', 'filipino': 'tl', 'finnish': 'fi', 'french': 'fr', 'frisian': 'fy', 'galician': 'gl', 'georgian': 'ka', 'german': 'de', 'greek': 'el', 'gujarati': 'gu', 'haitian creole': 'ht', 'hausa': 'ha', 'hawaiian': 'haw', 'hebrew': 'he', 'hindi': 'hi', 'hmong': 'hmn', 'hungarian': 'hu', 'icelandic': 'is', 'igbo': 'ig', 'indonesian': 'id', 'irish': 'ga', 'italian': 'it', 'japanese': 'ja', 'javanese': 'jw', 'kannada': 'kn', 'kazakh': 'kk', 'khmer': 'km', 'korean': 'ko', 'kurdish (kurmanji)': 'ku', 'kyrgyz': 'ky', 'lao': 'lo', 'latin': 'la', 'latvian': 'lv', 'lithuanian': 'lt', 'luxembourgish': 'lb', 'macedonian': 'mk', 'malagasy': 'mg', 'malay': 'ms', 'malayalam': 'ml', 'maltese': 'mt', 'maori': 'mi', 'marathi': 'mr', 'mongolian': 'mn', 'myanmar (burmese)': 'my', 'nepali': 'ne', 'norwegian': 'no', 'odia': 'or', 'pashto': 'ps', 'persian': 'fa', 'polish': 'pl', 'portuguese': 'pt', 'punjabi': 'pa', 'romanian': 'ro', 'russian': 'ru', 'samoan': 'sm', 'scots gaelic': 'gd', 'serbian': 'sr', 'sesotho': 'st', 'shona': 'sn', 'sindhi': 'sd', 'sinhala': 'si', 'slovak': 'sk', 'slovenian': 'sl', 'somali': 'so', 'spanish': 'es', 'sundanese': 'su', 'swahili': 'sw', 'swedish': 'sv', 'tajik': 'tg', 'tamil': 'ta', 'telugu': 'te', 'thai': 'th', 'turkish': 'tr', 'ukrainian': 'uk', 'urdu': 'ur', 'uyghur': 'ug', 'uzbek': 'uz', 'vietnamese': 'vi', 'welsh': 'cy', 'xhosa': 'xh', 'yiddish': 'yi', 'yoruba': 'yo', 'zulu': 'zu'}
+banned_terms = ['bannedtermshere']
+lang = {'afrikaans': 'af', 'albanian': 'sq', 'amharic': 'am', 'arabic': 'ar', 'armenian': 'hy', 'azerbaijani': 'az', 'basque': 'eu', 'belarusian': 'be', 'bengali': 'bn', 'bosnian': 'bs', 'bulgarian': 'bg', 'catalan': 'ca', 'cebuano': 'ceb', 'chichewa': 'ny', 'chinese-': 'zh-cn', 'chinese': 'zh-tw', 'corsican': 'co', 'croatian': 'hr', 'czech': 'cs', 'danish': 'da', 'dutch': 'nl', 'english': 'en', 'esperanto': 'eo', 'estonian': 'et', 'filipino': 'tl', 'finnish': 'fi', 'french': 'fr', 'frisian': 'fy', 'galician': 'gl', 'georgian': 'ka', 'german': 'de', 'greek': 'el', 'gujarati': 'gu', 'haitian creole': 'ht', 'hausa': 'ha', 'hawaiian': 'haw', 'hebrew': 'he', 'hindi': 'hi', 'hmong': 'hmn', 'hungarian': 'hu', 'icelandic': 'is', 'igbo': 'ig', 'indonesian': 'id', 'irish': 'ga', 'italian': 'it', 'japanese': 'ja', 'javanese': 'jw', 'kannada': 'kn', 'kazakh': 'kk', 'khmer': 'km', 'korean': 'ko', 'kurdish': 'ku', 'kyrgyz': 'ky', 'lao': 'lo', 'latin': 'la', 'latvian': 'lv', 'lithuanian': 'lt', 'luxembourgish': 'lb', 'macedonian': 'mk', 'malagasy': 'mg', 'malay': 'ms', 'malayalam': 'ml', 'maltese': 'mt', 'maori': 'mi', 'marathi': 'mr', 'mongolian': 'mn', 'myanmar': 'my','burmese': 'my', 'nepali': 'ne', 'norwegian': 'no', 'odia': 'or', 'pashto': 'ps', 'persian': 'fa', 'polish': 'pl', 'portuguese': 'pt', 'punjabi': 'pa', 'romanian': 'ro', 'russian': 'ru', 'samoan': 'sm', 'scots-gaelic': 'gd', 'serbian': 'sr', 'sesotho': 'st', 'shona': 'sn', 'sindhi': 'sd', 'sinhala': 'si', 'slovak': 'sk', 'slovenian': 'sl', 'somali': 'so', 'spanish': 'es', 'sundanese': 'su', 'swahili': 'sw', 'swedish': 'sv', 'tajik': 'tg', 'tamil': 'ta', 'telugu': 'te', 'thai': 'th', 'turkish': 'tr', 'ukrainian': 'uk', 'urdu': 'ur', 'uyghur': 'ug', 'uzbek': 'uz', 'vietnamese': 'vi', 'welsh': 'cy', 'xhosa': 'xh', 'yiddish': 'yi', 'yoruba': 'yo', 'zulu': 'zu'}
 command_list = ['yt','say','seen','mail','e','inbox','gws','gis','tran','whois','post','board','bgtime','rmange','owner','cmds','mod','reindex','nom']
 api_key = ''
-
-def unescape(text): return html.unescape(text)
-def escape(text): return ''.join(['&#%s;' % ord(x) for x in text])
 
 objects = dict()
 lastmsg = dict()
@@ -76,7 +73,7 @@ def stop_task(name):
     v = objects[name]
     v.var = 0
     del objects[name]
-        
+    
 def aichat(x, user, uid, roomname, othervars):
     try: session_id = session_dict[user]
     except:
@@ -89,6 +86,13 @@ def _nom(x, user, uid, roomname, othervars):
     person, message = x.split(' ',1)
     othervars[1].say(person, message)
     return 'PM sent.'
+
+def _langs(x, user, uid, roomname, othervars):
+    if x == '': part = ['do langs 1, 2, or 3']
+    elif x == '1': part = ['['+i+':'+lang[i]+']' for i in lang][:40]
+    elif x == '2': part = ['['+i+':'+lang[i]+']' for i in lang][40:80]
+    elif x == '3': part = ['['+i+':'+lang[i]+']' for i in lang][80:]
+    return ', '.join(part)
 
 def _notify(x):
     notify[x] = json.dumps(x+' new mail is available. do inbox show then inbox check numberhere')
@@ -245,7 +249,7 @@ def _weapon(arg, user, uid, roomname, othervars):
     try: arg, item = arg.split(' ',1)
     except: pass
     if arg == 'list':
-        return ', '.join([i+': cost-'+weapon_dict[i].split()[0] for i in weapon_dict])
+        return ', '.join(['['+i+': cost-'+weapon_dict[i].split()[0]+' level-'+weapon_dict[i].split()[3]+']' for i in weapon_dict])
     elif arg == 'mylist':
         derp = []
         for i in _dict['inventory']['weapons']:
@@ -300,7 +304,6 @@ def _attack(user, _user, uid, roomname, othervars):
     except: pass
     try:
         _accuracy = __dict['status']['effects']['accuracy']
-        print('accuracy')
         _timeout = _accuracy[0]
         _timeout = time.time() - _timeout
         if _timeout > 600:
@@ -327,6 +330,11 @@ def _attack(user, _user, uid, roomname, othervars):
         part = part + _part
         hit = random.choice(part)
         return hit
+    if wtype == 'ranged':
+        equipped ,_nyaaa = __dict['inventory']['weapons'][weapon]
+        _nyaaa -= 1
+        if _nyaaa <= 0: _nyaaa = 0
+        __dict['inventory']['weapons'][weapon] = [equipped, _nyaaa]
     if hit_chance(accuracy) == 'n':
         __dict['status']['attack_timeout'] = time.time()
         rpg_players[_user] = json.dumps(__dict)
@@ -335,29 +343,20 @@ def _attack(user, _user, uid, roomname, othervars):
         return _title+'you missed!!!'
     if hit_chance(critchance) == 'y':
         crit = True
-        max_damage *= 2
-    if wtype == 'ranged':
-        for i in __dict['inventory']['weapons']:
-            _i = __dict['inventory']['weapons'][i]
-            if _i[0] == 'equipped':
-                _ammo = _i[1]
-                ammo -= 1
-                if ammo <= 0: ammo = 0
-                _i.remove(_ammo)
-                _i.append(ammo)        
+        max_damage *= 2       
     min_damage = max_damage * 0.6
     damage = random.randrange(round(min_damage), round(max_damage))
     _dict['status']['health'] -= damage
     level = _dict['status']['level']
     _level = __dict['status']['level']
     _kexp = round(max_health[str(level)]/random.choice([12,11,13]))
-    _exp = round(max_health[str(_level)]/random.choice(range(30,35))) 
+    _exp = round(max_health[str(_level)]/random.choice(range(20,35))) 
     if _dict['status']['health'] <= 0:
         _dict['status']['health'] = 0
         killed = True
-        _exp += _kexp
-        __dict['inventory']['money'] += _exp*2
-    __dict['inventory']['money'] += _exp*2
+        __dict['status']['exp'] += _kexp
+        __dict['inventory']['money'] += _kexp
+    __dict['inventory']['money'] += _exp
     __dict['status']['exp'] += _exp
     __dict['status']['attack_timeout'] = time.time()        
     rpg_players[user] = json.dumps(_dict)
@@ -563,7 +562,7 @@ def _buy(arg, user, uid, roomname, othervars):
         else:
             return _title+'you do not have enough money'
         _dict['inventory']['weapons'][_name] = ['unequipped', ammo]
-    if arg == 'item':
+    elif arg == 'item':
         i = item_dict[_name].split()
         cost = int(i[-1])
         cost *= amount
@@ -578,7 +577,7 @@ def _buy(arg, user, uid, roomname, othervars):
             elif _gender == 'them': title = 'your grace: '+user
             _dict['title'] = title
         _dict['inventory']['items'][_name] = 'purchased'
-    if arg == 'potion':
+    elif arg == 'potion':
         i = potion_dict[_name].split()
         cost = int(i[0])
         cost *= amount
@@ -588,13 +587,34 @@ def _buy(arg, user, uid, roomname, othervars):
             return _title+'you do not have enough money'
         try: _dict['inventory']['potions'][_name] += amount
         except: _dict['inventory']['potions'][_name] = amount
+    elif arg == 'ammo':
+        i = weapon_dict[_name].split()
+        need_ammo = i[4]
+        if need_ammo == 'yes':
+            if _name == 'nuke':
+                cost = int(i[0])
+                _amount = 1
+            else:
+                cost = int(i[0])/10
+                _amount = 10
+            cost *= amount
+            amount *= _amount
+            if money >= cost:
+                money -= cost
+            else:
+                return _title+'you do not have enough money'
+            try:
+                equipped, pammo = _dict['inventory']['weapons'][_name]
+                pammo += amount
+                _dict['inventory']['weapons'][_name] = [equipped, pammo]
+            except: return 'you dont have that weapon'            
     _dict['inventory']['money'] = money    
-    _dict['status']['exp'] += 5*level
+    _dict['status']['exp'] += 3*level
     rpg_players[user] = json.dumps(_dict)
     calc_level(user)
-    try: _title = _dict['title'] + ', '
+    try: _title = _dict['title'] + ', ' 
     except: _title = ''
-    return _title+'you bought ' + str(amount) + ' ' + _name
+    return _title+'you bought ' + str(amount) + ' ' + _name + ' '+ arg + ' for ' + str(cost) + ' gold'
 
 def dumprpg():
     f = open("rpg.txt", "w")
@@ -705,6 +725,7 @@ def _gis(x, user, uid, roomname, othervars):
         return 'no images found'            
 
 def _tran(x, user, uid, roomname, othervars):
+    x = x.lower()
     try:
         banned = x.split()
         if bool(set(banned) & set(banned_terms)):
@@ -713,7 +734,7 @@ def _tran(x, user, uid, roomname, othervars):
         if dest in lang.keys():
             dest = lang[dest]
         if dest not in lang.values():
-            return 'Invalid language'
+            return 'Invalid language. use langs command to see available languages'
         try:
             qs = urllib.parse.quote(_text)
         except:
@@ -795,7 +816,7 @@ def _expires(x, user, uid, chat, othervars):
         except:
             chat.post('invalid, try again and check spelling')
     _task(expires, x)
-    return 'working on it. give the bot 4 seconds to respond before trying again'
+    return 'working on it. give the bot 5 seconds to respond before trying again'
 
 def name_color_gen():
     clist, i, color = ['1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'], 0, []
@@ -810,11 +831,14 @@ def _whois(x, user, uid, roomname, othervars):
         return 'no accounts for that user yet'
 
 def dumpwhois(x):
+    print('saving')
+    time.sleep(3)
     f = open("whois.txt", "w")
     for i in cakelib2.uids:
            _uid = json.loads(cakelib2.uids[i])
            f.write(json.dumps([i, _uid])+"\n")                                        
     f.close()
+    print('saving done')
 
 def _post(x, user, uid, roomname, othervars):
     try:
@@ -991,7 +1015,7 @@ def _mod(x, user, uid, roomname, othervars):
             elif func == 'remove':
                 if args not in _mods: return 'That user is not modded.'
                 else: _mods.remove(args)
-            else: return None
+            else: return 'derp'
             f = open('mods.txt', 'w')
             for i in _mods:
                     f.write(i+'\n')
@@ -1009,4 +1033,3 @@ def _timer(seconds, function, *var):
 def _task(function, *var):
     event = threading.Event()
     threading.Thread(target = function, args = (var), daemon = True).start() 
-
