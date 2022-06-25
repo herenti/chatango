@@ -26,7 +26,7 @@ specials = {'mitvcanal': 56, 'magicc666': 22, 'livenfree': 18, 'eplsiite': 56, '
 ####
 
 '''
-(C) Copyright 2022 herenti:
+(C) Copyright 2014 herenti:
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -115,23 +115,22 @@ class Chat:
         a = []
         for i in uids:
             i = json.loads(uids[i])
-            i = i.split()
             if string in i:
                 a += i
         return list(set(a))
 
     def whois(self, string):
-        a = []
-        a.append(string)
-        a = list(set(a))
+        a = [string]
         while True:
             l = len(a)
             for n in a:
-                a += self._whois(n)
+                i = self._whois(n)
+                if len(i) > 0: a += i
+                else: a = ['no accounts for that user']; break
                 a = list(set(a))
             if l == len(a):
                 break
-        return a                 
+        return sorted(a)                  
 
     def unmod(self, user):
         if self.isMod(self.main.user):
@@ -620,14 +619,13 @@ def gUser(user, alias, uid, _id):
 def rUids(k, v):
     key, value = k.lower(), v.lower()    
     if key not in uids:
-        uids[key] = json.dumps(value)
+        uids[key] = json.dumps([value])
     else:
         x = []
         values = json.loads(uids[key])
-        x.append(values)
+        x += values
         x.append(value)
-        x = list(set(' '.join(x).split()))
-        x = " ".join(str(y) for y in x)
+        x = list(set(x))
         uids[key] = json.dumps(x)
 
 def font_parse(x):
@@ -654,7 +652,8 @@ def clean(msg):
 
 def checkG(search):
     url = 'http://%s.chatango.com' % search
-    search_results = urllib.request.urlopen(url)
+    try: search_results = urllib.request.urlopen(url)
+    except: return False
     content = search_results.read().decode()
     search_results.close()
-    return bool('content="//st.chatango.com/flash/group.swf?gn=' in content)
+    return bool('//st.chatango.com/js/gz/emb_fullsize.js' in content)
