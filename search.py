@@ -26,7 +26,7 @@ def _whois(string):
 
 def whois(string):
     a = [string]
-    while True:
+    while True: #continues matching until no more are found
         l = len(a)
         for n in a:
             i = _whois(n)
