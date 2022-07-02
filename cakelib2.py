@@ -130,7 +130,17 @@ class Chat:
                 a = list(set(a))
             if l == len(a):
                 break
-        return sorted(a)                  
+        return sorted(a)
+
+    def delwhois(self, string):
+        string = string.split()
+        for x in string:
+            for i in uids:
+                n = json.loads(uids[i])
+                if x in n:
+                    n.remove(x)
+                    uids[i] = json.dumps(n)
+        return
 
     def unmod(self, user):
         if self.isMod(self.main.user):
