@@ -4,7 +4,7 @@ uids = {'23393105': ['te4','te5'],'26419005': ['te3','te4'],'23983780': ['te2','
 
 
 def rUids(k, v):
-    #on all relavant chatango room events pass uid/username to this function.
+    #on all relavant chatango room events pass uid/username to this function. g_participants, participant, i, b any others
     key, value = k.lower(), v.lower()    
     if key not in uids:
         uids[key] = [value]
