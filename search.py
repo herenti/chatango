@@ -1,10 +1,10 @@
 
-uids = {'23393105': ['te4','te5'],'26419005': ['te3','te4'],'23983780': ['te2','te3'],'23390465': ['te2','te1'],'23386205': ['voxela','muse','te1'], '34166780': ['slug', 'muse', 'pixie', 'cunn', 'zombie', 'opal', 'virgo', 'charm', 'skann', 'feline', 'crush', 'rune', 'ejae', 'squirtle', 'succubi', 'hex', 'halo', 'horo'], '86298963': ['xxkaringtonxx'], '56157642': ['h'], '98904156': ['kenyan'], '48833405': ['atticus'], '85707971': ['agentpaper'], '66931466': ['sapphire', 'hershey'], '87888214': ['thorasic'], '10917657': ['lethebot'], '62797501': ['asriel'], '88081233': ['trav', 'trantran122', 'tasty', 't', 'raccoon', 'tea'], '11136664': ['jessicanigrifanclub', 'courtney'], '16631726': ['heartbeat'], '27002630': ['ainzsyn']
+uids = {'23393105': ['te4','te5'],'26419005': ['te3','te4'],'23983780': ['te2','te3'],'23390465': ['te2','te1'],'23386205': ['voxela','muse','te1'], '34166780': ['slug', 'muse', 'pixie', 'cunn', 'zombie', 'opal', 'virgo', 'charm', 'skann', 'feline', 'crush', 'rune', 'ejae', 'squirtle', 'sucbi', 'hex', 'halo', 'horo'], '86298963': ['xxkaringtonxx'], '56157642': ['h'], '98904156': ['kenyan'], '48833405': ['atticus'], '85707971': ['agentpaper'], '66931466': ['sapphire', 'hershey'], '87888214': ['thorasic'], '10917657': ['lethebot'], '62797501': ['asriel'], '88081233': ['trav', 'trantran122', 'tasty', 't', 'raccoon', 'tea'], '11136664': ['jessica', 'courtney'], '16631726': ['heartbeat'], '27002630': ['ainzsyn']
     }
 
 
 def rUids(k, v):
-    #on all relavant chatango room events pass uid/username to this function. g_participants, participant, i, b, any others
+    #on all relavant chatango room events pass uid/username to this function. g_participants, participant, i, b any others
     key, value = k.lower(), v.lower()    
     if key not in uids:
         uids[key] = [value]
