@@ -10,15 +10,18 @@ import random
 import html
 import threading
 from os import listdir
-from text import notify, rmind, rpg_players, room_list, jsonrooms, _mods, _board, lockrooms
+from text import notify, rmind, rpg_players, room_list, jsonrooms, _mods, __board, lockrooms
 
 weighted_choice = lambda s : random.choice(sum(([v]*wt for v,wt in s),[]))
 opener = urllib.request.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-banned_terms = ['bannedtermshere']
+banned_terms = []
 lang = {'afrikaans': 'af', 'albanian': 'sq', 'amharic': 'am', 'arabic': 'ar', 'armenian': 'hy', 'azerbaijani': 'az', 'basque': 'eu', 'belarusian': 'be', 'bengali': 'bn', 'bosnian': 'bs', 'bulgarian': 'bg', 'catalan': 'ca', 'cebuano': 'ceb', 'chichewa': 'ny', 'chinese-': 'zh-cn', 'chinese': 'zh-tw', 'corsican': 'co', 'croatian': 'hr', 'czech': 'cs', 'danish': 'da', 'dutch': 'nl', 'english': 'en', 'esperanto': 'eo', 'estonian': 'et', 'filipino': 'tl', 'finnish': 'fi', 'french': 'fr', 'frisian': 'fy', 'galician': 'gl', 'georgian': 'ka', 'german': 'de', 'greek': 'el', 'gujarati': 'gu', 'haitian creole': 'ht', 'hausa': 'ha', 'hawaiian': 'haw', 'hebrew': 'he', 'hindi': 'hi', 'hmong': 'hmn', 'hungarian': 'hu', 'icelandic': 'is', 'igbo': 'ig', 'indonesian': 'id', 'irish': 'ga', 'italian': 'it', 'japanese': 'ja', 'javanese': 'jw', 'kannada': 'kn', 'kazakh': 'kk', 'khmer': 'km', 'korean': 'ko', 'kurdish': 'ku', 'kyrgyz': 'ky', 'lao': 'lo', 'latin': 'la', 'latvian': 'lv', 'lithuanian': 'lt', 'luxembourgish': 'lb', 'macedonian': 'mk', 'malagasy': 'mg', 'malay': 'ms', 'malayalam': 'ml', 'maltese': 'mt', 'maori': 'mi', 'marathi': 'mr', 'mongolian': 'mn', 'myanmar': 'my','burmese': 'my', 'nepali': 'ne', 'norwegian': 'no', 'odia': 'or', 'pashto': 'ps', 'persian': 'fa', 'polish': 'pl', 'portuguese': 'pt', 'punjabi': 'pa', 'romanian': 'ro', 'russian': 'ru', 'samoan': 'sm', 'scots-gaelic': 'gd', 'serbian': 'sr', 'sesotho': 'st', 'shona': 'sn', 'sindhi': 'sd', 'sinhala': 'si', 'slovak': 'sk', 'slovenian': 'sl', 'somali': 'so', 'spanish': 'es', 'sundanese': 'su', 'swahili': 'sw', 'swedish': 'sv', 'tajik': 'tg', 'tamil': 'ta', 'telugu': 'te', 'thai': 'th', 'turkish': 'tr', 'ukrainian': 'uk', 'urdu': 'ur', 'uyghur': 'ug', 'uzbek': 'uz', 'vietnamese': 'vi', 'welsh': 'cy', 'xhosa': 'xh', 'yiddish': 'yi', 'yoruba': 'yo', 'zulu': 'zu'}
 command_list = ['yt','say','seen','mail','e','inbox','gws','gis','tran','whois','post','board','bgtime','rmange','owner','cmds','mod','reindex','nom']
 api_key = ''
+
+def unescape(text): return html.unescape(text)
+def escape(text): return ''.join(['&#%s;' % ord(x) for x in text])
 
 objects = dict()
 lastmsg = dict()
@@ -35,27 +38,27 @@ def _say(x, user, uid, roomname, othervars):
     return x
 
 def keygen():
-    l = list('abcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
+    l = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
     random.shuffle(l)
     return l
 
 def encrypt(x):
     key = keygen()
-    y = list('abcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
+    y = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
     z = dict(zip(y, key))
     l = []
     for match in list(x):
         l.append(match.replace(match, z[match]))
-    return (''.join(key), ''.join(l))
+    return [''.join(l), ''.join(key)]
 
 def decrypt(key, x):
     key = list(key)
-    y = list('abcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
+    y = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
     z = dict(zip(key, y))
     l = []
     for match in list(x):
         l.append(match.replace(match, z[match]))
-    return ''.join(l) 
+    return ''.join(l)
 
 def task_create(name, function, *args):
     task = newObject(**{
@@ -70,10 +73,13 @@ def task_create(name, function, *args):
     threading.Thread(target=set_timeout, args=(name, args), daemon = True).start()
 
 def stop_task(name):
-    v = objects[name]
-    v.var = 0
+    objects[name].var = False
     del objects[name]
-    
+
+def te(i):
+    print(i)
+    time.sleep(3)
+        
 def aichat(x, user, uid, roomname, othervars):
     try: session_id = session_dict[user]
     except:
@@ -124,18 +130,66 @@ def _seen(x, user, uid, roomname, othervars):
     except KeyError: ret = 'I have not recorded any messages from that account.'
     return ret
 
-clan_list = ['ethos','verity','regal','burathian','noctuo']
+clan_list = ['ethos','verity','regal','burathian','noctuo', 'dragoon']
 
 weapon_dict = {'unarmed': '0 5 1 1 no 1 mele',
                'short sword': '100 10 1 1 no 1 mele',
                'bow': '100 13 2 1 yes 10 ranged',
-               'dildo': '200 18 1 3 no 1 mele',
-               'flintlock pistol': '200 24 2 3 yes 10 ranged',
+               'dildo': '200 16 1 3 no 1 mele',
+               'simple crossbow': '200 19 2 3 yes 10 ranged',
+               'kurrik': '500 24 1 8 no 1 mele',
+               'long bow': '500 24 2 8 yes 10 ranged',
+               'legalace': '750 28 1 13 no 1 mele',
+               'heraldi nakal': '750 32 1 13 yes 15 ranged',
                'nuke': '1000000 1000000 10000 50 yes 1 ranged',
                'jizz': '0 1 0.1 1 yes 1 ranged',
-               'orc penis': '500 38 1 6 no 1 mele',
-               'fury bow': '500 45 2 6 yes 10 ranged'
-               }
+               'orc penis': '2400 36 1 17 no 1 mele',
+               'nalax blade': '4320 66 1 25 no 1 mele',
+               'eonir': '7776 122 1 32 no 1 mele',
+               'scorch blade': '13997 230 1 40 no 1 mele',
+               'flametongue': '27994 409 1 49 no 1 mele',
+               'masamena': '58787 733 1 56 no 1 mele',
+               'katana': '105816 1253 1 65 no 1 mele',
+               'mace bolag': '190468 2263 1 69 no 1 mele',
+               'goat boner': '361890 4334 1 79 no 1 mele',
+               'four seasons sword': '759969 7607 1 87 no 1 mele',
+               'master sword': '1443941 13483 1 98 no 1 mele',
+               'thundercrotch': '2743489 24520 1 100 no 1 mele',
+               'fury bow': '2400 39 2 17 yes 15 ranged',
+               'spunk lobber': '4560 72 2 26 yes 15 ranged',
+               'zephyr': '8208 131 2 34 yes 15 ranged',
+               'bone bow': '16416 240 2 39 yes 15 ranged',
+               'heraldi nakul': '29549 470 2 47 yes 15 ranged',
+               'wicked crossbow': '62052 751 2 57 yes 15 ranged',
+               'ashen longbow': '130310 1443 2 67 yes 15 ranged',
+               'hunter bow': '260620 2595 2 76 yes 15 ranged',
+               'grool launcher': '495179 4793 2 74 yes 15 ranged',
+               'charred yaran': '891322 8822 2 87 yes 15 ranged',
+               'nerethil': '1871776 15905 2 98 yes 15 ranged',
+               'cbt inducer': '7861458 28104 2 100 yes 15 ranged'
+            }
+
+def selector(i, n):
+    return random.choice(range(i, n))
+
+def wgen():
+    _lmin, _lma = 16, 20
+    cost = 1200
+    rate = ''
+    _dmin, _dma = 36, 40
+    a = []
+    for i in range(80):
+        level = selector(_lmin, _lma)
+        _lmin, _lma = _lmin+selector(6, 10), _lma+selector(6, 10)
+        cost *= selector(18, 22)/10
+        damage = selector(round(_dmin), round(_dma))
+        _dmin *= 1.83
+        _dma *= 1.83
+        if level >= 100: level = 100
+        a.append(str(round(cost))+' '+str(round(damage))+' '+rate+' '+str(level) + ' yes 15 ranged')
+        if level == 100: break
+    return a
+        
 
 potion_dict = {'health s': '20 25 health',
                'health m': '40 50 health',
@@ -144,9 +198,9 @@ potion_dict = {'health s': '20 25 health',
                'elixer': '400 500 health',
                'godsgrow': '1000 1000 health',
                'peerless health': '2500 3000 health',
-               'accuracy': '100 0.1 accuracy',
-               'peerless accuracy': '500 0.2 accuracy',
-               'crit': '2000 0.2 critchance'
+               'accuracy': '250 0.1 accuracy',
+               'peerless accuracy': '2500 0.2 accuracy',
+               'crit': '2500 0.2 critchance'
                }
 
 item_dict = {'condom':'it might be used 100',
@@ -248,8 +302,26 @@ def _weapon(arg, user, uid, roomname, othervars):
     except: return 'you are not registered yet'
     try: arg, item = arg.split(' ',1)
     except: pass
-    if arg == 'list':
-        return ', '.join(['['+i+': cost-'+weapon_dict[i].split()[0]+' level-'+weapon_dict[i].split()[3]+']' for i in weapon_dict])
+    if arg == 'shop':
+        level = _dict['status']['level']
+        a = {}
+        b = {}
+        for i in weapon_dict:
+            if weapon_dict[i].split()[-1] == 'ranged':
+                a[weapon_dict[i].split()[3]] = [i, weapon_dict[i].split()[0], weapon_dict[i].split()[-1], weapon_dict[i].split()[3]]
+            elif weapon_dict[i].split()[-1] == 'mele':
+                b[weapon_dict[i].split()[3]] = [i, weapon_dict[i].split()[0], weapon_dict[i].split()[-1], weapon_dict[i].split()[3]]
+        c = [int(i) for i in a]
+        d = [int(i) for i in b]
+        c.sort()
+        d.sort()
+        _closest = min(c, key=lambda x: abs(int(x)-level))
+        closest = min(d, key=lambda x: abs(int(x)-level))
+        e = [c[c.index(_closest)], c[c.index(_closest)+1]]
+        f = [d[d.index(closest)], d[d.index(closest)+1]]
+        g = [a[str(i)] for i in e]
+        h = [b[str(i)] for i in f]
+        return '['+', '.join([i[0]+': cost-'+i[1]+' type-'+i[2]+' level-'+i[3] for i in g])+'], '+'['+', '.join([i[0]+': cost-'+i[1]+' type-'+i[2]+' level-'+i[3] for i in h])+']'
     elif arg == 'mylist':
         derp = []
         for i in _dict['inventory']['weapons']:
@@ -653,13 +725,14 @@ def _inbox(x, user, uid, roomname, othervars):
             return ret
         elif x[0] == 'check':
             name, msg, _user, stime = json.loads(rmind[x[1]])
-            del rmind[x[1]]
-            f = open("rmind.txt", "w")
-            for i in rmind:
-                    _name, _msg, __user, _stime = json.loads(rmind[i])                                        
-                    f.write(json.dumps([i, _name, _msg, __user, _stime])+"\n")
-            f.close()
-            return 'Message from %s to %s: %s - sent %s ago.' % (_user, name, msg, getSTime(float(stime)))
+            if user == name:
+                del rmind[x[1]]
+                f = open("rmind.txt", "w")
+                for i in rmind:
+                        _name, _msg, __user, _stime = json.loads(rmind[i])                                        
+                        f.write(json.dumps([i, _name, _msg, __user, _stime])+"\n")
+                f.close()
+                return 'Message from %s to %s: %s - sent %s ago.' % (_user, name, msg, getSTime(float(stime)))
     except: return 'fail'
 
 def _yt(vid, user, uid, roomname, othervars):
@@ -816,19 +889,18 @@ def _expires(x, user, uid, chat, othervars):
         except:
             chat.post('invalid, try again and check spelling')
     _task(expires, x)
-    return 'working on it. give the bot 5 seconds to respond before trying again'
+    return 'working on it. give the bot 4 seconds to respond before trying again'
 
 def name_color_gen():
     clist, i, color = ['1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'], 0, []
     while (i < 6): color.append(random.choice(clist)); i+=1
     return ''.join(color)
 
-def _whois(x, user, uid, roomname, othervars):
-    ret = roomname.whois(x.lower())
-    if len(ret) > 0:
-        return ', '.join(ret)
-    else:
-        return 'no accounts for that user yet'
+def _whois(x, user, uid, roomname, othervars): 
+    return ', '.join(roomname.whois(x.lower()))
+
+def _delwhois(x, user, uid, roomname, othervars):
+    return roomname.delwhois(x.lower())
 
 def dumpwhois(x):
     print('saving')
@@ -845,20 +917,20 @@ def _post(x, user, uid, roomname, othervars):
             keylist = list('12345678910@$&*^#!abcdefghijklmnopqrstuvwxyz')
             key = ''.join([random.choice(keylist) for x in range(6)])
     except Exception as e: print(e)
-    if len(_board.keys()) > 11:
-        for i in _board:
-            del _board[i]
+    if len(__board.keys()) > 11:
+        for i in __board:
+            del __board[i]
     x = '%s - <font color="#00ffff"><b>%s</b></font>: %s' % (time.strftime('%c'), user, x)
-    _board[key] = json.dumps(x)
+    __board[key] = json.dumps(x)
     f = open("board.txt", "w")
-    for i in _board:
-           _post = json.loads(_board[i])
+    for i in __board:
+           _post = json.loads(__board[i])
            f.write(json.dumps([i, _post])+"\n")                                        
     f.close()
     return 'Posted to the board.'
 
 def _board(x, user, uid, roomname, othervars):
-    y = [json.loads(_board[x]) for x in _board]
+    y = [json.loads(__board[x]) for x in __board]
     return '<br/><br/>'+ '<br/>'.join(y)
 
 def gender(x):
@@ -876,9 +948,9 @@ def gender(x):
     return r
 
 def _bgtime(x, user, uid, chat, cake):
-    x = x.lower()
-    try: resp = urllib.request.urlopen("http://st.chatango.com/profileimg/%s/%s/%s/mod1.xml" % (x[0], x[1], x))
-    except: resp = urllib.request.urlopen("http://st.chatango.com/profileimg/%s/%s/%s/mod1.xml" % (x[0], x[0], x))
+    x = x.lower() if len(x) > 0 else user
+    try: resp = opener.open("https://st.chatango.com/profileimg/%s/%s/%s/mod1.xml" % (x[0], x[1], x))
+    except: resp = opener.open("https://st.chatango.com/profileimg/%s/%s/%s/mod1.xml" % (x[0], x[0], x))
     try: data = resp.read().decode()
     except: data = resp.read().decode('latin-1')
     resp.close()
@@ -887,7 +959,7 @@ def _bgtime(x, user, uid, chat, cake):
     data = int(data)
     if data < time.time(): return 'that users background expired: ' + getSTime(data) + ' ago'
     else:
-        return 'that user has: ' + getBGTime(int(data)) + ' left'
+        return 'that user has: ' + getBGTime(data) + ' left'
 
 def is_online(user):
     resp = urllib.request.urlopen("http://"+user+".chatango.com").read().decode()
