@@ -140,7 +140,7 @@ class Chat:
                 if x in n:
                     n.remove(x)
                     uids[i] = json.dumps(n)
-        return
+        return 'done'
 
     def unmod(self, user):
         if self.isMod(self.main.user):

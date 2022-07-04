@@ -37,29 +37,6 @@ class newObject(object):
 def _say(x, user, uid, roomname, othervars):
     return x
 
-def keygen():
-    l = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
-    random.shuffle(l)
-    return l
-
-def encrypt(x):
-    key = keygen()
-    y = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
-    z = dict(zip(y, key))
-    l = []
-    for match in list(x):
-        l.append(match.replace(match, z[match]))
-    return [''.join(l), ''.join(key)]
-
-def decrypt(key, x):
-    key = list(key)
-    y = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()_-+={}[]|\:;?/~`"" ')
-    z = dict(zip(key, y))
-    l = []
-    for match in list(x):
-        l.append(match.replace(match, z[match]))
-    return ''.join(l)
-
 def task_create(name, function, *args):
     task = newObject(**{
         'function': function,
@@ -1105,3 +1082,4 @@ def _timer(seconds, function, *var):
 def _task(function, *var):
     event = threading.Event()
     threading.Thread(target = function, args = (var), daemon = True).start() 
+

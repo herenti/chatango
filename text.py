@@ -1,14 +1,14 @@
 import json
 import cakelib2
 
-_board = dict()
+__board = dict()
 f = open('board.txt', 'r')
 print('Loading board...')
 for line in f.readlines():
         try:
                 if len(line) > 0:
                         key, post = json.loads(line.strip())
-                        _board[key] = json.dumps(post)        
+                        __board[key] = json.dumps(post)        
         except Exception as e:
                 print("Could not load board: %s" % e)
 f.close()

@@ -79,7 +79,7 @@ class Lemonator(cakelib2.Main):
                         resp = getattr(core, func)(string, user, uid, chat, othervars)
                         if resp == None: resp = 'incorrect command usage'
                         chat.post(resp)
-                    except Exception: chat.post('invalid command use')
+                    except Exception: chat.post(get_error())
 
     def onPm(self, user, msg, net):
         self.pm.say(user, 'i am a bot')            
@@ -98,21 +98,11 @@ def get_error():
         return "%s: %i: %s[%s]" % (file, line, et.__name__, str(ev))
     except Exception as e:
         print(e)
-
-def load_utill():
-    f = open('utill.txt', 'r')
-    data = f.read()
-    p = re.compile(r"<p>(.*?)</p>").search(data).group(1)
-    k = re.compile(r"<k>(.*?)</k>").search(data).group(1)
-    u = re.compile(r"<u>(.*?)</u>").search(data).group(1)
-    f.close()
-    return (p, k, u)
     
 if __name__ == '__main__':
     try:
-        p, k, u = load_utill()
         core._timer(180, core.dumpwhois, None)
-        Lemonator.start(u, core.decrypt(k, p), room_list, pm=True)
+        Lemonator.start('voxela', 'i3ryok', room_list, pm=True)
     except:
         'cake' == 'gacen'
         print(get_error())
