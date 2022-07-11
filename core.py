@@ -52,10 +52,6 @@ def task_create(name, function, *args):
 def stop_task(name):
     objects[name].var = False
     del objects[name]
-
-def te(i):
-    print(i)
-    time.sleep(3)
         
 def aichat(x, user, uid, roomname, othervars):
     try: session_id = session_dict[user]
@@ -198,6 +194,27 @@ max_health = {'1': 110, '2': 121, '3': 133, '4': 146, '5': 161, '6': 177, '7': 1
               '50': 11739, '51': 12913, '52': 14204, '53': 15625, '54': 17187, '55': 18906, '56': 20797, '57': 22876, '58': 25164, '59': 27680, '60': 30448, '61': 33493, '62': 36842, '63': 40527, '64': 44579, '65': 49037, '66': 53941, '67': 59335, '68': 65268, '69': 71795, '70': 78975, '71': 86872, '72': 95559, '73': 105115, '74': 115627,
               '75': 127190, '76': 139908, '77': 153899, '78': 169289, '79': 186218, '80': 204840, '81': 225324, '82': 247856, '83': 272642, '84': 299906, '85': 329897, '86': 362887, '87': 399175, '88': 439093, '89': 483002, '90': 531302, '91': 584432, '92': 642876, '93': 707163, '94': 777880, '95': 855668, '96': 941234, '97': 1035358, '98': 1138894, '99': 1252783, '100': 1378061
               }
+
+rpg_help = {'cmds':'commands: register, buy, item, potion, propose, attack, equip, rpgstats.<br/> use rpghelp commandhere for specific info',
+            'buy':'item (amount), weapon (amount), potion (amount)',
+            'register': 'register in a clan with base stats',
+            'item': 'shop (list of items), mylist (list of owned items), info (info about the item)',
+            'potion': 'drink (drink a potion), shop (list of potions), mylist (list of owned potions)',
+            'weapon': 'shop (list of weapons close to your level), mylist (list of owned weapons)',
+            'propose': 'to username (if you have the wedding rings item you may propose to another user), accept username (accept a users proposal of marriage)',
+            'attack': 'username (attack a user with your equipped weapon. affected by stats and timeouts. some weapons use ammo',
+            'equip': 'equip a specific weapon',
+            'rpgstats': 'username (check a users status or your own with no user name)'
+            }
+
+def _rpghelp(x, user, uid, roomname, othervars):
+    if x == '':
+        ret = rpg_help['cmds']
+    else:
+        try:
+            ret = rpg_help[x.lower()]
+        except: ret =  'invalid'
+    return ret
     
 def _register(x, user, uid, roomname, othervars):
     if user not in rpg_players:
@@ -222,7 +239,7 @@ def _item(arg, user, uid, roomname, othervars):
         except: title = ''
         try: arg, item = arg.split(' ',1)
         except: arg, item = arg, ''
-        if arg == 'list':
+        if arg == 'shop':
             i = ', '.join([i+': cost-'+item_dict[i].split()[-1] for i in item_dict])
             return i
         elif arg == 'mylist':
@@ -233,7 +250,7 @@ def _item(arg, user, uid, roomname, othervars):
         elif arg == 'info':
             _item = ' '.join(item_dict[item].split()[:-1])
             return item+': '+_item
-    except: return 'invallid'
+    except: return 'invalid'
 
 def _potion(arg, user, uid, roomname, othervars):
     try:
@@ -268,7 +285,7 @@ def _potion(arg, user, uid, roomname, othervars):
             rpg_players[user] = json.dumps(_dict)
             calc_level(user)
             return title+'you drank: ['+item+' potion]'
-    elif arg == 'list':
+    elif arg == 'shop':
         return ', '.join([i+': cost - '+potion_dict[i].split()[0] for i in potion_dict])
     elif arg == 'mylist':
         try: return ', '.join([i+': supply - '+_dict['inventory']['potions'][i] for i in _dict['inventory']['potions']])
@@ -281,24 +298,38 @@ def _weapon(arg, user, uid, roomname, othervars):
     except: pass
     if arg == 'shop':
         level = _dict['status']['level']
-        a = {}
-        b = {}
+        a = []
+        b = []
         for i in weapon_dict:
             if weapon_dict[i].split()[-1] == 'ranged':
-                a[weapon_dict[i].split()[3]] = [i, weapon_dict[i].split()[0], weapon_dict[i].split()[-1], weapon_dict[i].split()[3]]
+                a.append([weapon_dict[i].split()[3], [i, weapon_dict[i].split()[0], weapon_dict[i].split()[-1], weapon_dict[i].split()[3]]])
             elif weapon_dict[i].split()[-1] == 'mele':
-                b[weapon_dict[i].split()[3]] = [i, weapon_dict[i].split()[0], weapon_dict[i].split()[-1], weapon_dict[i].split()[3]]
-        c = [int(i) for i in a]
-        d = [int(i) for i in b]
+                b.append([weapon_dict[i].split()[3], [i, weapon_dict[i].split()[0], weapon_dict[i].split()[-1], weapon_dict[i].split()[3]]])
+        c = [int(i[0]) for i in a]
+        d = [int(i[0]) for i in b]
         c.sort()
         d.sort()
         _closest = min(c, key=lambda x: abs(int(x)-level))
         closest = min(d, key=lambda x: abs(int(x)-level))
-        e = [c[c.index(_closest)], c[c.index(_closest)+1]]
-        f = [d[d.index(closest)], d[d.index(closest)+1]]
-        g = [a[str(i)] for i in e]
-        h = [b[str(i)] for i in f]
-        return '['+', '.join([i[0]+': cost-'+i[1]+' type-'+i[2]+' level-'+i[3] for i in g])+'], '+'['+', '.join([i[0]+': cost-'+i[1]+' type-'+i[2]+' level-'+i[3] for i in h])+']'
+        _nim = list(set(c))
+        nim = list(set(d))
+        _nim.sort()
+        nim.sort()
+        try: e = [c[c.index(_closest)], _nim[_nim.index(_closest)+1]]
+        except: e = [c[c.index(_closest)]]
+        try: f = [d[d.index(closest)], nim[nim.index(closest)+1]]
+        except: f = [d[d.index(closest)]]
+        g = []
+        for i in e:
+            for z in a:
+                if int(z[0]) == int(i):                    
+                    g.append(z[1])
+        h = []
+        for i in f:
+            for z in b:
+                if int(z[0]) == int(i):
+                    h.append(z[1])
+        return "<font color='#00ffff'>[</font>"+', '.join(['<font color="#00ff00">'+i[0]+'</font>: cost-'+i[1]+' type-'+i[2]+' level-'+i[3] for i in g])+"<font color='#00ffff'>]</font>, "+"<font color='#00ffff'>[</font>"+', '.join(['<font color="#00ff00">'+i[0]+'</font>: cost-'+i[1]+' type-'+i[2]+' level-'+i[3] for i in h])+"<font color='#00ffff'>]</font>"
     elif arg == 'mylist':
         derp = []
         for i in _dict['inventory']['weapons']:
@@ -589,6 +620,7 @@ def _buy(arg, user, uid, roomname, othervars):
         amount = int(_item[-1]) 
         _item.remove(_item[-1])
     except: amount = 1
+    if amount < 1: return 'amount must be greater than 0'
     _name = ' '.join(_item)
     _dict = json.loads(rpg_players[user])
     money = _dict['inventory']['money']
@@ -973,7 +1005,7 @@ def _rmanage(x, user, uid, chat, cake):
         func, _room = x[0], x[1]
     else:
         func = x        
-    if cake[3].rank < 2: return 'You do not have moderator permissions.'
+    if cake[3].rank < 2 and func != 'list': return 'You do not have moderator permissions.'
     else:
         if func == 'list':
             derp = []
