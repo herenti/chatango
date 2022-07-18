@@ -58,4 +58,4 @@ def _login(_u, _p):
                 time.sleep(0.3)
         cumsock.close()
         print('done')
-    return ret
+    return
