@@ -13,7 +13,7 @@ for line in f.readlines():
                 if len(line) > 0:
                         _d.append(line.strip().lower()) 
         except Exception as e:
-                print("Could not load board: %s" % e)
+                print("Could not load words: %s" % e)
 f.close()
 
 a = [i for i in _d if i.startswith('a')]
