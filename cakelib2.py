@@ -320,6 +320,13 @@ class Interpret:
     def _denied(self, data, net):
         net.disconnect()
 
+    def _getmore(self, net):
+        net = _chatutil[net]
+        for i in range(10):
+            net.send('get_more', '35')
+            time.sleep(0.5)
+        return
+    
     def _inited(self, data, net):
         init = [['g_participants', 'start'],
                ['blocklist', 'block', '', 'next', '500'],
@@ -327,6 +334,8 @@ class Interpret:
                ['getbannedwords'],
                ['getpremium', '1'],
                ['msgbg', '1']]
+        _chatutil[net.chatname] = net
+        threading.Thread(target = self._getmore, args = (net.chatname,), daemon = True).start()
         [net.send(x[0], *x[1:]) for x in init]
         print('connected sucessfully to '+ net.chatname)
         
@@ -335,7 +344,7 @@ class Interpret:
         y = []
         for x in data:
             info = newObject(**{
-              'user': gUser(x[3], x[4], x[2], str(x[1]).split('.')[0][-4:]),
+              'user': gUser(x[3], x[4], x[2], str(x[1]).split('.')[0][-4:], None),
               'sid': x[0],
               'joinTime': x[1]
               })
@@ -346,7 +355,7 @@ class Interpret:
     def _participant(self, data, net):
         ctype = data[0]
         pUser = newObject(**{
-            'user': gUser(data[3], data[4], data[2], str(data[6].split('.')[0][-4:])),
+            'user': gUser(data[3], data[4], data[2], str(data[6].split('.')[0][-4:]), None),
             'joinTime': data[6],
             'uid': data[2],
             'sid': data[1]
@@ -404,37 +413,32 @@ class Interpret:
         net.chatInfo.userCount = int(data[0], 16)
 
     def _nomore(self, data, net):
-        try:
-            net.gHistory.set()
-            if hasattr(net, 'gHistory'):
-                delattr(net, 'gHistory')
-        except: 'cake' == 'cake'        
+        pass        
 
     def _i(self, data, net):
         _id = re.search("<n(.*?)/>", ':'.join(data[9:]))
         if _id: _id = _id.group(1)
         hist = newObject(**{
-            'user': gUser(data[1], data[2], data[3], _id),
+            'user': gUser(data[1], data[2], data[3], _id, data[6]),
             'cid': data[4],
             'uid': data[3],
             'time': data[0],
             'sid': data[5],
-            'ip': data[6],
             'content': ':'.join(data[9:]),
             'room': net
           })
-        net.chatInfo.history.append(clean(hist))            
+        net.chatInfo.history.append(clean(hist))
+        call(self.main, 'onHist', hist.user, hist.room, hist)
 
     def _b(self, data, net):
         _id = re.search("<n(.*?)/>", ':'.join(data[9:]))
         if _id: _id = _id.group(1)
         msg = newObject(**{
-            'user': gUser(data[1], data[2], data[3], _id),
+            'user': gUser(data[1], data[2], data[3], _id, data[6]),
             'room': net,
             'uid': data[3],
             'cid': data[4],
             'time': data[0],
-            'ip': data[6],
             'content': ':'.join(data[9:]),
             'sid': None
             })
@@ -574,7 +578,9 @@ class Main:
 uids = dict()
 lastmsg = dict()
 
-gnameColor = 'ffffff'
+_chatutil = dict()
+
+gnameColor = '00e1f4'
 gfontSise = '11'
 gfontColor = 'ffffff'
 
@@ -613,7 +619,7 @@ def anon_id(_id, uid):
         int(uid[4:][i][-1]) + int((_id if (_id != None and len(_id) == 4) else '3452')[i][-1])
         )% 10) for i in range(4)])
 
-def gUser(user, alias, uid, _id):
+def gUser(user, alias, uid, _id, ip):
     '''Parses the user name and creates the user class.'''
     if user == '': user = 'None'
     if user == 'None':
@@ -623,7 +629,12 @@ def gUser(user, alias, uid, _id):
     user = user.lower()
     if not user.startswith('#' or '$'):
         if user not in _user_:
-            rUids(uid, user)
+            if ip != None:
+                if ip != '':
+                    rUids(ip, user)
+                    rUids(uid, user)
+            else:
+                rUids(uid, user)
     return User(**{'name': user.lower(), 'uid': uid})
 
 def rUids(k, v):
@@ -631,12 +642,10 @@ def rUids(k, v):
     if key not in uids:
         uids[key] = json.dumps([value])
     else:
-        x = []
         values = json.loads(uids[key])
-        x += values
-        x.append(value)
-        x = list(set(x))
-        uids[key] = json.dumps(x)
+        if value not in values:
+            values.append(value)
+            uids[key] = json.dumps(values)
 
 def font_parse(x):
     '''Emulates the HTML5 font setup. It is kind of messy but it works.'''
