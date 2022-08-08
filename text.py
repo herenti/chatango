@@ -24,6 +24,18 @@ for line in f.readlines():
                 print("Could not load whois: %s" % e)
 f.close()
 
+lastmsg = dict()
+f = open('lastmsg.txt', 'r')
+print('Loading lastmsg...')
+for line in f.readlines():
+        try:
+                if len(line) > 0:
+                        name, msg, room, seentime = json.loads(line.strip())
+                        lastmsg[name] = json.dumps([msg, room, seentime])        
+        except Exception as e:
+                print("Could not load lastmsg: %s" % e)
+f.close()
+
 rpg_players = dict()
 f = open('rpg.txt', 'r')
 print('Loading rpg...')
