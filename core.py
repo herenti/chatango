@@ -10,12 +10,12 @@ import random
 import html
 import threading
 from os import listdir
-from text import notify, rmind, rpg_players, room_list, jsonrooms, _mods, __board, lockrooms
+from text import notify, rmind, rpg_players, lastmsg, room_list, jsonrooms, _mods, __board, lockrooms
 
 weighted_choice = lambda s : random.choice(sum(([v]*wt for v,wt in s),[]))
 opener = urllib.request.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-banned_terms = []
+banned_terms = ['']
 lang = {'afrikaans': 'af', 'albanian': 'sq', 'amharic': 'am', 'arabic': 'ar', 'armenian': 'hy', 'azerbaijani': 'az', 'basque': 'eu', 'belarusian': 'be', 'bengali': 'bn', 'bosnian': 'bs', 'bulgarian': 'bg', 'catalan': 'ca', 'cebuano': 'ceb', 'chichewa': 'ny', 'chinese-': 'zh-cn', 'chinese': 'zh-tw', 'corsican': 'co', 'croatian': 'hr', 'czech': 'cs', 'danish': 'da', 'dutch': 'nl', 'english': 'en', 'esperanto': 'eo', 'estonian': 'et', 'filipino': 'tl', 'finnish': 'fi', 'french': 'fr', 'frisian': 'fy', 'galician': 'gl', 'georgian': 'ka', 'german': 'de', 'greek': 'el', 'gujarati': 'gu', 'haitian creole': 'ht', 'hausa': 'ha', 'hawaiian': 'haw', 'hebrew': 'he', 'hindi': 'hi', 'hmong': 'hmn', 'hungarian': 'hu', 'icelandic': 'is', 'igbo': 'ig', 'indonesian': 'id', 'irish': 'ga', 'italian': 'it', 'japanese': 'ja', 'javanese': 'jw', 'kannada': 'kn', 'kazakh': 'kk', 'khmer': 'km', 'korean': 'ko', 'kurdish': 'ku', 'kyrgyz': 'ky', 'lao': 'lo', 'latin': 'la', 'latvian': 'lv', 'lithuanian': 'lt', 'luxembourgish': 'lb', 'macedonian': 'mk', 'malagasy': 'mg', 'malay': 'ms', 'malayalam': 'ml', 'maltese': 'mt', 'maori': 'mi', 'marathi': 'mr', 'mongolian': 'mn', 'myanmar': 'my','burmese': 'my', 'nepali': 'ne', 'norwegian': 'no', 'odia': 'or', 'pashto': 'ps', 'persian': 'fa', 'polish': 'pl', 'portuguese': 'pt', 'punjabi': 'pa', 'romanian': 'ro', 'russian': 'ru', 'samoan': 'sm', 'scots-gaelic': 'gd', 'serbian': 'sr', 'sesotho': 'st', 'shona': 'sn', 'sindhi': 'sd', 'sinhala': 'si', 'slovak': 'sk', 'slovenian': 'sl', 'somali': 'so', 'spanish': 'es', 'sundanese': 'su', 'swahili': 'sw', 'swedish': 'sv', 'tajik': 'tg', 'tamil': 'ta', 'telugu': 'te', 'thai': 'th', 'turkish': 'tr', 'ukrainian': 'uk', 'urdu': 'ur', 'uyghur': 'ug', 'uzbek': 'uz', 'vietnamese': 'vi', 'welsh': 'cy', 'xhosa': 'xh', 'yiddish': 'yi', 'yoruba': 'yo', 'zulu': 'zu'}
 command_list = ['yt','say','seen','mail','e','inbox','gws','gis','tran','whois','post','board','bgtime','rmange','owner','cmds','mod','reindex','nom']
 api_key = ''
@@ -24,7 +24,6 @@ def unescape(text): return html.unescape(text)
 def escape(text): return ''.join(['&#%s;' % ord(x) for x in text])
 
 objects = dict()
-lastmsg = dict()
 
 class newObject(object):
 
@@ -66,6 +65,16 @@ def _nom(x, user, uid, roomname, othervars):
     othervars[1].say(person, message)
     return 'PM sent.'
 
+def _pfp(x, user, uid, roomname, othervars):
+    try: _i, _n = x[0], x[1]
+    except: _i, _n = x, x
+    return 'http://ust.chatango.com/profileimg/%s/%s/%s/full.jpg' % (_i, _n, x)
+
+def _msbg(x, user, uid, roomname, othervars):
+    try: _i, _n = x[0], x[1]
+    except: _i, _n = x, x
+    return 'http://ust.chatango.com/profileimg/%s/%s/%s/msgbg.jpg' % (_i, _n, x)
+    
 def _langs(x, user, uid, roomname, othervars):
     if x == '': part = ['do langs 1, 2, or 3']
     elif x == '1': part = ['['+i+':'+lang[i]+']' for i in lang][:40]
@@ -74,7 +83,7 @@ def _langs(x, user, uid, roomname, othervars):
     return ', '.join(part)
 
 def _notify(x):
-    notify[x] = json.dumps(x+' new mail is available. do inbox show then inbox check numberhere')
+    notify[x] = json.dumps(x+' new mail is available. do the inbox command')
     f = open('notify.txt', 'w')
     for i in notify:
             message = json.loads(notify[i])
@@ -92,8 +101,7 @@ def u_rooms(chat, user, othervars):
 def _seen(x, user, uid, roomname, othervars):
     try:
             name = x.lower()
-            msg, room, seentime = lastmsg[name]
-            msg = unescape(msg)
+            msg, room, seentime = json.loads(lastmsg[name])
             urooms = u_rooms(roomname, name, othervars)
             if room in urooms: urooms.remove(room)
             ret = "<b>%s</b> was last seen in <b>%s</b> %s ago saying <b>%s</b>." % (name, room, getSTime(float(seentime)), msg) if is_online(name) != False else "<b>%s</b> was last seen leaving <b>%s</b> %s ago saying <b>%s</b>." % (name, room, getSTime(float(seentime)), msg)
@@ -706,10 +714,12 @@ def dumprpg():
 
 def _mail(x, user, uid, roomname, othervars):
     try:
-            mid = str(random.randrange(1000, 9999))
+            mid = str(random.randrange(10000, 99999))
             name, message = x.split(' ',1)
             name = name.lower()
             stime = time.time()
+            if len(message) == 0: return 'fail'
+            message = escape(message)
             rmind[mid] = json.dumps([name, message, user, stime])
             _notify(name)
             f = open("rmind.txt", "w")
@@ -719,30 +729,26 @@ def _mail(x, user, uid, roomname, othervars):
             f.close()
             return "I will mail %s that." % gender(name)
     except Exception as e:
-            return '%s' % e
+            return 'fail'
 
 def _inbox(x, user, uid, roomname, othervars):
     try:
-        x = x.lower().split(' ')
         y = []
-        if len(x) < 1: return 'Incorrect command usage.'
-        if x[0] == 'show':
-            for i in rmind:
-                  name, msg, _user, stime = json.loads(rmind[i])
-                  if name == user: y.append('#<font color="#00ffff"><b>[</b></font>'+i+'<font color="#00ffff"><b>]</b></font>' + ': from - '+_user)
-            ret = '<br /><br />'+'<br />'.join(y) if len(y) > 0 else 'no messages found'
-            return ret
-        elif x[0] == 'check':
-            name, msg, _user, stime = json.loads(rmind[x[1]])
+        n = []
+        for i in rmind:
+            name, msg, _user, stime = json.loads(rmind[i])
+            n.append(i)
             if user == name:
-                del rmind[x[1]]
-                f = open("rmind.txt", "w")
-                for i in rmind:
-                        _name, _msg, __user, _stime = json.loads(rmind[i])                                        
-                        f.write(json.dumps([i, _name, _msg, __user, _stime])+"\n")
-                f.close()
-                return 'Message from %s to %s: %s - sent %s ago.' % (_user, name, msg, getSTime(float(stime)))
-    except: return 'fail'
+                y.append('Message from %s to %s: %s - sent %s ago.' % (_user, name, msg, getSTime(float(stime))))
+        for i in n:
+            del rmind[i]
+        f = open("rmind.txt", "w")
+        for i in rmind:
+                _name, _msg, __user, _stime = json.loads(rmind[i])                                        
+                f.write(json.dumps([i, _name, _msg, __user, _stime])+"\n")
+        f.close()
+        return '<br/><br/>'+'<br/>'.join(y) if len(y) > 0 else 'no message yet!!'
+    except Exception as e : return print(e)
 
 def _yt(vid, user, uid, roomname, othervars):
     banned = vid.split()
@@ -919,6 +925,11 @@ def dumpwhois(x):
            _uid = json.loads(cakelib2.uids[i])
            f.write(json.dumps([i, _uid])+"\n")                                        
     f.close()
+    f = open("lastmsg.txt", "w")
+    for i in lastmsg:
+        msg, room, seentime = json.loads(lastmsg[i])
+        f.write(json.dumps([i, msg, room, seentime])+"\n")
+    f.close()
     print('saving done')
 
 def _post(x, user, uid, roomname, othervars):
@@ -926,9 +937,10 @@ def _post(x, user, uid, roomname, othervars):
             keylist = list('12345678910@$&*^#!abcdefghijklmnopqrstuvwxyz')
             key = ''.join([random.choice(keylist) for x in range(6)])
     except Exception as e: print(e)
-    if len(__board.keys()) > 11:
-        for i in __board:
-            del __board[i]
+    if len(x) == 0: return 'fail'
+    if len(__board.keys()) > 5:
+        __board.clear()
+    x = escape(x)
     x = '%s - <font color="#00ffff"><b>%s</b></font>: %s' % (time.strftime('%c'), user, x)
     __board[key] = json.dumps(x)
     f = open("board.txt", "w")
@@ -975,7 +987,7 @@ def is_online(user):
     return str(bool('chat with' in resp.lower()))+ ' '+user
 
 def _cmds(x, user, uid, chat, cake):
-    return 'in progress: for now: [whois, seen, bgtime, yt, gis, gws, tran, mail, inbox show/check, owner, post, board]' 
+    return 'in progress -- for now: [rpghelp, whois, pfp, msbg, seen, bgtime, yt, gis, gws, tran, mail, inbox show/check, owner, post, board]' 
 
 chatderp = []
 chatobj = []
