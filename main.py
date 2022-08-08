@@ -11,7 +11,7 @@ from text import room_list, lockrooms
 import imp
 
 debug = False
-if debug == True: room_list = ['the-shire']
+if debug == True: room_list = ['cake-debug']
 
 class Lemonator(cakelib2.Main):
 
@@ -31,12 +31,41 @@ class Lemonator(cakelib2.Main):
             return '%s' % get_error()
         return 'Reloaded Modules.'
 
+    def onHist(self, user, chat, message):
+        prefix = ';'
+        if len(message.content) > 0:
+            data = message.content.split(" ", 1)
+            if len(data) > 1: func, string = data[0], data[1]
+            else: func, string = data[0].lower(), ""
+            try:
+                _prefix = True if func[0] == prefix else False
+                func = func[1:] if _prefix == True else func
+            except: _prefix = False
+            if _prefix:
+                if func.lower() == 'delwhois':
+                    chat.delwhois(string.lower())
+
     def onPost(self, user, chat, message):
+        prefix = ';'
+        if len(message.content) > 0:
+            data = message.content.split(" ", 1)
+            if len(data) > 1: func, string = data[0], data[1]
+            else: func, string = data[0].lower(), ""
+            try:
+                _prefix = True if func[0] == prefix else False
+                func = func[1:] if _prefix == True else func
+            except: _prefix = False
+            if _prefix:
+                if func.lower() == 'delwhois':
+                    chat.delwhois(string.lower())
         if 'i' not in core.chatderp:
             for i in self.gChats():
                 i = i.chatname
                 if i not in room_list:
-                    self.gChat(i).disconnect()       
+                    self.gChat(i).disconnect()
+        if user.name.lower().startswith('#' or '$'): return
+        if user.name.lower() not in cakelib2._user_:
+            core.lastmsg[user.name.lower()] = json.dumps([cakelib2.escape(message.content), chat.chatname, time.time()])
         mods = core._mods
         user.rank = 2 if user.name.lower() in mods else 1
         othervars = [message, self.pm, self, user]
@@ -57,7 +86,6 @@ class Lemonator(cakelib2.Main):
                         f.write(json.dumps([i, lmessage]))
                     f.close()
             except Exception as e: print(e)
-            core.lastmsg[user] = [cakelib2.escape(message.content), chat.chatname, time.time()]
             data = message.content.split(" ", 1)
             if len(data) > 1: func, string = data[0], data[1]
             else: func, string = data[0].lower(), ""
@@ -95,14 +123,14 @@ def get_error():
             file = tb.tb_frame.f_code.co_filename
             tb = tb.tb_next
     try:
-        return "%s: %i: %s[%s]" % (file, line, et.__name__, str(ev))
+        return "%s: line-%i: %s[%s]" % (file, line, et.__name__, str(ev))
     except Exception as e:
         print(e)
     
 if __name__ == '__main__':
     try:
-        core._timer(180, core.dumpwhois, None)
-        Lemonator.start('voxela', '', room_list, pm=True)
+        core._timer(80, core.dumpwhois, None)
+        Lemonator.start('', '', room_list, pm=True)
     except:
         'cake' == 'gacen'
         print(get_error())
