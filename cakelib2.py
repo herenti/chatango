@@ -321,7 +321,6 @@ class Interpret:
         net.disconnect()
 
     def _getmore(self, net):
-        net = _chatutil[net]
         for i in range(10):
             net.send('get_more', '35')
             time.sleep(0.5)
@@ -334,8 +333,7 @@ class Interpret:
                ['getbannedwords'],
                ['getpremium', '1'],
                ['msgbg', '1']]
-        _chatutil[net.chatname] = net
-        threading.Thread(target = self._getmore, args = (net.chatname,), daemon = True).start()
+        threading.Thread(target = self._getmore, args = (net,), daemon = True).start()
         [net.send(x[0], *x[1:]) for x in init]
         print('connected sucessfully to '+ net.chatname)
         
@@ -577,8 +575,6 @@ class Main:
 
 uids = dict()
 lastmsg = dict()
-
-_chatutil = dict()
 
 gnameColor = '00e1f4'
 gfontSise = '11'
