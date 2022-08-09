@@ -342,7 +342,7 @@ class Interpret:
         y = []
         for x in data:
             info = newObject(**{
-              'user': gUser(x[3], x[4], x[2], str(x[1]).split('.')[0][-4:], None),
+              'user': gUser(x[3], x[4], x[2], str(x[1]).split('.')[0][-4:], None, record = True),
               'sid': x[0],
               'joinTime': x[1]
               })
@@ -353,7 +353,7 @@ class Interpret:
     def _participant(self, data, net):
         ctype = data[0]
         pUser = newObject(**{
-            'user': gUser(data[3], data[4], data[2], str(data[6].split('.')[0][-4:]), None),
+            'user': gUser(data[3], data[4], data[2], str(data[6].split('.')[0][-4:]), None, record = True),
             'joinTime': data[6],
             'uid': data[2],
             'sid': data[1]
@@ -417,7 +417,7 @@ class Interpret:
         _id = re.search("<n(.*?)/>", ':'.join(data[9:]))
         if _id: _id = _id.group(1)
         hist = newObject(**{
-            'user': gUser(data[1], data[2], data[3], _id, data[6]),
+            'user': gUser(data[1], data[2], data[3], _id, data[6], record = False),
             'cid': data[4],
             'uid': data[3],
             'time': data[0],
@@ -432,7 +432,7 @@ class Interpret:
         _id = re.search("<n(.*?)/>", ':'.join(data[9:]))
         if _id: _id = _id.group(1)
         msg = newObject(**{
-            'user': gUser(data[1], data[2], data[3], _id, data[6]),
+            'user': gUser(data[1], data[2], data[3], _id, data[6], record = True),
             'room': net,
             'uid': data[3],
             'cid': data[4],
@@ -615,7 +615,7 @@ def anon_id(_id, uid):
         int(uid[4:][i][-1]) + int((_id if (_id != None and len(_id) == 4) else '3452')[i][-1])
         )% 10) for i in range(4)])
 
-def gUser(user, alias, uid, _id, ip):
+def gUser(user, alias, uid, _id, ip, record):
     '''Parses the user name and creates the user class.'''
     if user == '': user = 'None'
     if user == 'None':
@@ -623,14 +623,15 @@ def gUser(user, alias, uid, _id, ip):
             user = '#anon'+anon_id(_id, uid)        
         else: user = '$'+alias
     user = user.lower()
-    if not user.startswith('#' or '$'):
-        if user not in _user_:
-            if ip != None:
-                if ip != '':
+    if ip == '': ip = None
+    if record == True:
+        if not user.startswith('#' or '$'):
+            if user not in _user_:
+                if ip != None:
                     rUids(ip, user)
                     rUids(uid, user)
-            else:
-                rUids(uid, user)
+                else:
+                    rUids(uid, user)
     return User(**{'name': user.lower(), 'uid': uid})
 
 def rUids(k, v):
