@@ -32,18 +32,15 @@ class Lemonator(cakelib2.Main):
         return 'Reloaded Modules.'
 
     def onHist(self, user, chat, message):
-        prefix = ';'
         if len(message.content) > 0:
-            data = message.content.split(" ", 1)
-            if len(data) > 1: func, string = data[0], data[1]
-            else: func, string = data[0].lower(), ""
-            try:
-                _prefix = True if func[0] == prefix else False
-                func = func[1:] if _prefix == True else func
-            except: _prefix = False
-            if _prefix:
-                if func.lower() == 'delwhois':
-                    chat.delwhois(string.lower())
+            if user.name.lower().startswith('#' or '$'): return
+            if user.name.lower() not in cakelib2._user_:
+                try:
+                    _content, _chatname, _time =json.loads(core.lastmsg[user.name.lower()])
+                    if float(_time) < float(message.time):
+                        core.lastmsg[user.name.lower()] = json.dumps([cakelib2.escape(message.content), chat.chatname, message.time])
+                except:
+                    core.lastmsg[user.name.lower()] = json.dumps([cakelib2.escape(message.content), chat.chatname, message.time])
 
     def onPost(self, user, chat, message):
         prefix = ';'
