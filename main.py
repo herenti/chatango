@@ -127,7 +127,7 @@ def get_error():
 if __name__ == '__main__':
     try:
         core._timer(80, core.dumpwhois, None)
-        Lemonator.start('', '', room_list, pm=True)
+        Lemonator.start('user', 'password', room_list, pm=True)
     except:
         'cake' == 'gacen'
         print(get_error())
