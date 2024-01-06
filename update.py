@@ -1,6 +1,9 @@
 import re
 import urllib.request
 import urllib.parse
+import time
+
+#modified from Vissle Drissle's program
 
 '''MIT License
 
@@ -52,6 +55,7 @@ def updateprofile():
     req = urllib.request.Request(link, payload, headers=headers)
     update = urllib.request.urlopen(req)
     print('done. next account:')
+    time.sleep(0.5)
     return 
     
 def Auth(user, password): 
@@ -60,4 +64,3 @@ def Auth(user, password):
 
 while True:
     updateprofile()
-
