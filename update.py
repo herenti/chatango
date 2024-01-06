@@ -1,7 +1,5 @@
 import re
 import html
-import json
-import time
 import urllib.request
 import urllib.parse
 
@@ -29,24 +27,21 @@ SOFTWARE.'''
 
 def regex(pattern, x, default): return re.search(pattern, x).group(1) if re.search(pattern, x) else default
 
-root = "https://chatango.com"
-user_id = input ('username: ')
-_password = input ('password: ')
 headers = {
   "User-Agent": "Mozilla/5.0"
   }
 
-
 def updateprofile():
-    link = root + "/updateprofile"
+    user_id = input ('username: ')
+    _password = input ('password: ')
+    link = "https://chatango.com/updateprofile?css"
     data = {
-        "s": Auth(),
+        "s": Auth(user_id, _password),
         "auth": "token",
         "arch": "h5",
         "src": "group",
         "action": "update"
     }
-    link += "?css"
     form = {}
     form["body_bg_col"] = input('background html code: ')
     form["body_col"] = input('text html code: ')
@@ -57,10 +52,13 @@ def updateprofile():
     payload = urllib.parse.urlencode(payload).encode()
     req = urllib.request.Request(link, payload, headers=headers)
     update = urllib.request.urlopen(req)
+    print('done. next account:')
     return 
     
-def Auth(user=user_id, password=_password): 
+def Auth(user, password): 
     data = urllib.parse.urlencode({"user_id": user, "password": password, "storecookie": "on", "checkerrors": "yes"}).encode()
     return regex('auth.chatango.com=(.*?);', urllib.request.urlopen("http://chatango.com/login", data).getheader('Set-Cookie'), None)
 
-updateprofile()
+while True:
+    updateprofile()
+
